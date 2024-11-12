@@ -46,6 +46,10 @@ Your security is our top priority. DUO uses advanced encryption protocols to ens
 
 Experiencing issues? Have suggestions or feedback? Our support team is here to help! Contact us at [support@duoapp.de](mailto:support@duoapp.de) for assistance.
 
+## Documentation of further development work
+
+The documentation of further development work can be found in this OneDrive Word document: https://1drv.ms/w/s!AjdXc3CRAPcPiOpgZtvCdPrwOVT-fw?e=H9kqpg
+
 
 
 Thank you for choosing DUO – where friends connect, compete, and celebrate the love for card games. Enjoy playing!
