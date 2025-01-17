@@ -3,10 +3,12 @@ package api
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"math/rand"
+	"os"
 	"sync"
 
 	db "github.com/duo/db/sqlc"
@@ -16,111 +18,155 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var duoCards []string = []string{
-	"red_1",
-	"red_1",
-	"red_2",
-	"red_2",
-	"red_3",
-	"red_3",
-	"red_4",
-	"red_4",
-	"red_5",
-	"red_5",
-	"red_6",
-	"red_6",
-	"red_7",
-	"red_7",
-	"red_8",
-	"red_8",
-	"red_9",
-	"red_9",
-	"green_1",
-	"green_1",
-	"green_2",
-	"green_2",
-	"green_3",
-	"green_3",
-	"green_4",
-	"green_4",
-	"green_5",
-	"green_5",
-	"green_6",
-	"green_6",
-	"green_7",
-	"green_7",
-	"green_8",
-	"green_8",
-	"green_9",
-	"green_9",
-	"purple_1",
-	"purple_1",
-	"purple_2",
-	"purple_2",
-	"purple_3",
-	"purple_3",
-	"purple_4",
-	"purple_4",
-	"purple_5",
-	"purple_5",
-	"purple_6",
-	"purple_6",
-	"purple_7",
-	"purple_7",
-	"purple_8",
-	"purple_8",
-	"purple_9",
-	"purple_9",
-	"yellow_1",
-	"yellow_1",
-	"yellow_2",
-	"yellow_2",
-	"yellow_3",
-	"yellow_3",
-	"yellow_4",
-	"yellow_4",
-	"yellow_5",
-	"yellow_5",
-	"yellow_6",
-	"yellow_6",
-	"yellow_7",
-	"yellow_7",
-	"yellow_8",
-	"yellow_8",
-	"yellow_9",
-	"yellow_9",
-	"draw_4",
-	"draw_4",
-	"draw_4",
-	"draw_4",
-	"green_change_directions",
-	"green_change_directions",
-	"green_draw_2",
-	"green_draw_2",
-	"green_suspend",
-	"green_suspend",
-	"purple_change_directions",
-	"purple_change_directions",
-	"purple_draw_2",
-	"purple_draw_2",
-	"purple_suspend",
-	"purple_suspend",
-	"red_change_directions",
-	"red_change_directions",
-	"red_draw_2",
-	"red_draw_2",
-	"red_suspend",
-	"red_suspend",
-	"yellow_change_directions",
-	"yellow_change_directions",
-	"yellow_draw_2",
-	"yellow_draw_2",
-	"yellow_suspend",
-	"yellow_suspend",
-	"select_color",
-	"select_color",
-	"select_color",
-	"select_color",
+// var duoCards []string = []string{
+// 	"red_1",
+// 	"red_1",
+// 	"red_2",
+// 	"red_2",
+// 	"red_3",
+// 	"red_3",
+// 	"red_4",
+// 	"red_4",
+// 	"red_5",
+// 	"red_5",
+// 	"red_6",
+// 	"red_6",
+// 	"red_7",
+// 	"red_7",
+// 	"red_8",
+// 	"red_8",
+// 	"red_9",
+// 	"red_9",
+// 	"green_1",
+// 	"green_1",
+// 	"green_2",
+// 	"green_2",
+// 	"green_3",
+// 	"green_3",
+// 	"green_4",
+// 	"green_4",
+// 	"green_5",
+// 	"green_5",
+// 	"green_6",
+// 	"green_6",
+// 	"green_7",
+// 	"green_7",
+// 	"green_8",
+// 	"green_8",
+// 	"green_9",
+// 	"green_9",
+// 	"purple_1",
+// 	"purple_1",
+// 	"purple_2",
+// 	"purple_2",
+// 	"purple_3",
+// 	"purple_3",
+// 	"purple_4",
+// 	"purple_4",
+// 	"purple_5",
+// 	"purple_5",
+// 	"purple_6",
+// 	"purple_6",
+// 	"purple_7",
+// 	"purple_7",
+// 	"purple_8",
+// 	"purple_8",
+// 	"purple_9",
+// 	"purple_9",
+// 	"yellow_1",
+// 	"yellow_1",
+// 	"yellow_2",
+// 	"yellow_2",
+// 	"yellow_3",
+// 	"yellow_3",
+// 	"yellow_4",
+// 	"yellow_4",
+// 	"yellow_5",
+// 	"yellow_5",
+// 	"yellow_6",
+// 	"yellow_6",
+// 	"yellow_7",
+// 	"yellow_7",
+// 	"yellow_8",
+// 	"yellow_8",
+// 	"yellow_9",
+// 	"yellow_9",
+// 	"draw_4",
+// 	"draw_4",
+// 	"draw_4",
+// 	"draw_4",
+// 	"green_change_directions",
+// 	"green_change_directions",
+// 	"green_draw_2",
+// 	"green_draw_2",
+// 	"green_suspend",
+// 	"green_suspend",
+// 	"purple_change_directions",
+// 	"purple_change_directions",
+// 	"purple_draw_2",
+// 	"purple_draw_2",
+// 	"purple_suspend",
+// 	"purple_suspend",
+// 	"red_change_directions",
+// 	"red_change_directions",
+// 	"red_draw_2",
+// 	"red_draw_2",
+// 	"red_suspend",
+// 	"red_suspend",
+// 	"yellow_change_directions",
+// 	"yellow_change_directions",
+// 	"yellow_draw_2",
+// 	"yellow_draw_2",
+// 	"yellow_suspend",
+// 	"yellow_suspend",
+// 	"select_color",
+// 	"select_color",
+// 	"select_color",
+// 	"select_color",
+// }
+
+// Card struct definition
+type Card struct {
+	CardId        string // e.g., "red_1", "yellow_draw_2", or "wild_draw_4"
+	CardColor     string // e.g., "red", "yellow", or "wild"
+	CardValue     string // e.g., "1", "draw_2", or "draw_4"
+	CardType      string // e.g., "number", "special"
+	SpecialEffect string // e.g., "draw_2", "change_direction"
+	CardCount     int    // Number of copies of the card
+}
+
+// LoadCardsFromJSON loads cards from a JSON file and returns a list of Card objects and an array of CardId strings
+func LoadCardsFromJSON(filePath string) ([]Card, []string, error) {
+	// Open the file
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to open file: %w", err)
+	}
+	defer file.Close()
+
+	// Read the file's content
+	content, err := io.ReadAll(file)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to read file: %w", err)
+	}
+
+	// Parse JSON into a list of cards
+	var data struct {
+		Cards []Card `json:"cards"`
+	}
+	if err := json.Unmarshal(content, &data); err != nil {
+		return nil, nil, fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	// Create an array of CardId strings based on CardCount
+	var cardIds []string
+	for _, card := range data.Cards {
+		for i := 0; i < card.CardCount; i++ {
+			cardIds = append(cardIds, card.CardId)
+		}
+	}
+
+	return data.Cards, cardIds, nil
 }
 
 type GameUserStreams struct {
@@ -213,8 +259,31 @@ func (gm *GameManager) CreateGame(lobby *Lobby, lobbyId int32) (int, error) {
 		return 0, txErr
 	}
 
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Error getting working directory: %v", err)
+	}
+	fmt.Println(wd)
+
+	files, err := os.ReadDir(wd)
+	if err != nil {
+		log.Fatalf("Error reading directory: %v", err)
+	}
+	for _, file := range files {
+		fmt.Println(file.Name())
+	}
+
+	// Load cards
+	filePath := "/uno_cards.json"
+	cards, cardIds, err := LoadCardsFromJSON(filePath)
+	if err != nil {
+		log.Fatalf("Error loading cards: %v", err)
+		return 0, err
+	}
+	_ = cards // TODO: Use cards to implement game logic
+
 	gm.Mu.Lock()
-	gm.GameStreams[int(dbGame.ID)] = NewGame(duoCards) //TODO make cards dynamic
+	gm.GameStreams[int(dbGame.ID)] = NewGame(cardIds) //TODO make cards dynamic
 	gm.Mu.Unlock()
 
 	shuffleErr := gm.shuffleDrawStack(int(dbGame.ID), true)

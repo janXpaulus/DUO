@@ -14,6 +14,8 @@ FROM alpine
 
 COPY --from=builder /app/app.env /app.env
 
+COPY --from=builder /app/uno_cards.json /uno_cards.json
+
 COPY --from=builder /duo_backend /duo_backend
 
 CMD ["/duo_backend"]

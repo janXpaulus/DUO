@@ -1,0 +1,68 @@
+{
+	"cards": [
+	  {
+		"CardId": "red_1",
+		"CardColor": "red",
+		"CardValue": "1",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "yellow_draw_2",
+		"CardColor": "yellow",
+		"CardValue": "draw_2",
+		"CardType": "special",
+		"SpecialEffect": "draw_2",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "purple_7",
+		"CardColor": "purple",
+		"CardValue": "7",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "green_change_directions",
+		"CardColor": "green",
+		"CardValue": "change_directions",
+		"CardType": "special",
+		"SpecialEffect": "change_directions",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "wild_draw_4",
+		"CardColor": "wild",
+		"CardValue": "draw_4",
+		"CardType": "special",
+		"SpecialEffect": "draw_4",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "red_suspend",
+		"CardColor": "red",
+		"CardValue": "suspend",
+		"CardType": "special",
+		"SpecialEffect": "suspend",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "yellow_4",
+		"CardColor": "yellow",
+		"CardValue": "4",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "purple_draw_2",
+		"CardColor": "purple",
+		"CardValue": "draw_2",
+		"CardType": "special",
+		"SpecialEffect": "draw_2",
+		"CardCount": 2
+	  }
+	]
+  }
