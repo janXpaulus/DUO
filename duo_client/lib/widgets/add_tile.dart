@@ -43,6 +43,7 @@ class _AddTileState extends State<AddTile> {
                 debugPrint('Friend: $value');
                 setState(() {
                   watingForPlayer = true;
+                  //TODO: Show connected players
                   player = Friend()
                     ..name = value.name
                     ..uuid = value.uuid

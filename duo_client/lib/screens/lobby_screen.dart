@@ -2,18 +2,19 @@ import 'package:animated_background/animated_background.dart';
 import 'package:duo_client/pb/friend.pb.dart';
 import 'package:duo_client/pb/user.pb.dart';
 import 'package:duo_client/provider/api_provider.dart';
+import 'package:duo_client/provider/host_connection_provider.dart';
 import 'package:duo_client/provider/storage_provider.dart';
 import 'package:duo_client/screens/game_screen.dart';
 import 'package:duo_client/screens/home_screen.dart';
 import 'package:duo_client/utils/constants.dart';
-import 'package:duo_client/utils/helpers.dart';
-import 'package:duo_client/widgets/add_tile.dart';
-import 'package:duo_client/widgets/invite_dialog.dart';
 import 'package:duo_client/widgets/user_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+
+import '../widgets/add_tile.dart';
+import '../widgets/invite_dialog.dart';
 
 class LobbyScreen extends ConsumerStatefulWidget {
   const LobbyScreen({super.key});
@@ -36,14 +37,17 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
       ref.read(apiProvider).sendUserstatusUpdate(
           await ref.read(apiProvider).getToken(), FriendState.inLobby);
     });
+    ref.read(hostConnectionProvider).watchForConnectionStateChange();
   }
 
   @override
   Widget build(BuildContext context) {
     // ApiProvider _apiProvider = ref.watch(apiProvider);
-    bool creatingLobby = ref.watch(apiProvider).lobbyStatus == null &&
+    bool creatingLobby = false;
+    /*
+        ref.watch(apiProvider).lobbyStatus == null &&
         ref.watch(apiProvider).gameId == -1;
-    int lobbyId = ref.read(apiProvider).lobbyStatus?.lobbyId ?? 0;
+    int lobbyId = ref.read(apiProvider).lobbyStatus?.lobbyId ?? 0;*/
     // ref.listen(apiProvider, (ApiProvider? oldState, ApiProvider? newState) {
     //   if ((newState?.gameId ?? 0) > 0 && newState?.lobbyStatus == null) {
     //     Navigator.of(context).pushReplacementNamed(GameScreen.route);
@@ -55,6 +59,8 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
 
     bool gameReady = ref.watch(apiProvider).gameId > 0 &&
         ref.watch(apiProvider).lobbyStatus == null;
+
+    final hostConnection = ref.watch(hostConnectionProvider);
 
     return Scaffold(
       backgroundColor: Constants.bgColor,
@@ -133,41 +139,44 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                     ),
                     Expanded(
                       child: GridView(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 1.5,
-                        ),
-                        children: [
-                          ...(ref.watch(apiProvider).lobbyStatus?.users ?? [])
-                              .map((user) {
-                            return Padding(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 1.5,
+                          ),
+                          children: [
+                            ...hostConnection.connectedClients.entries
+                                .map((entry) {
+                              final clientConnection = entry.value;
+                              return Padding(
                                 padding: const EdgeInsets.all(
                                     Constants.defaultPadding / 2),
                                 child: UserTile(
-                                  user: user,
-                                  isStack: user.isStack,
-                                ));
-                          }),
-                          ...List.generate(
-                              (ref.watch(apiProvider).lobbyStatus?.maxPlayers ??
-                                      8) -
-                                  (ref.watch(apiProvider).lobbyStatus?.users ??
-                                          [])
-                                      .length, (index) {
-                            return Padding(
-                              padding: const EdgeInsets.all(
-                                  Constants.defaultPadding / 2),
-                              child: AddTile(
-                                Dialog: InviteDialog(
-                                  invideCode:
-                                      Helpers.fillPrefixWithZeros(lobbyId),
+                                  user: User(name: clientConnection.playerName),
+                                  isStack: false,
                                 ),
-                              ),
-                            );
-                          })
-                        ],
-                      ),
+                              );
+                            }),
+                            ...hostConnection.connectedClients.values
+                                .map((clientConnection) {
+                              return Padding(
+                                padding: const EdgeInsets.all(
+                                    Constants.defaultPadding / 2),
+                                child: TextButton(
+                                  onPressed: () {
+                                    hostConnection.addPlayer();
+                                  },
+                                  child: AddTile(
+                                    Dialog: InviteDialog(
+                                      invideCode: "shit",
+                                      clientConnection:
+                                          clientConnection.toJson().toString(),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                          ]),
                     ),
                     gameReady
                         ? Padding(
@@ -195,18 +204,8 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                           backgroundColor:
                                               Constants.errorColor),
                                       onPressed: () async {
-                                        int status = await ref
-                                            .read(apiProvider)
-                                            .disconnectLobby(
-                                                ref
-                                                    .read(storageProvider)
-                                                    .accessToken,
-                                                ref
-                                                        .watch(apiProvider)
-                                                        .lobbyStatus
-                                                        ?.lobbyId ??
-                                                    0);
-                                        if (status == 0) {
+                                        await hostConnection.stopAdvertising();
+                                        if (!hostConnection.isAdvertising) {
                                           print(
                                               'Disconnected sucessfully from lobby');
                                           Navigator.of(context)
@@ -263,6 +262,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                           ref
                                               .read(apiProvider)
                                               .startGame(token);
+                                          //TODO: Start game logic for BLE
                                           joiningGame = true;
                                         } else {
                                           ScaffoldMessenger.of(context)

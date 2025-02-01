@@ -1,4 +1,5 @@
 import 'package:duo_client/provider/api_provider.dart';
+import 'package:duo_client/provider/host_connection_provider.dart';
 import 'package:duo_client/provider/storage_provider.dart';
 import 'package:duo_client/screens/lobby_screen.dart';
 import 'package:duo_client/utils/constants.dart';
@@ -44,12 +45,15 @@ class _GameDialogState extends ConsumerState<GameDialog> {
                 children: [
                   DuoSelectTile(
                     title: 'Host Game',
-                    onPressed: () {
+                    onPressed: () async {
                       ref.read(apiProvider).createLobby(
                           ref.read(storageProvider).accessToken,
                           Constants.maxPlayers);
-                      Navigator.of(context)
-                          .pushReplacementNamed(LobbyScreen.route);
+                      await ref.read(hostConnectionProvider).createLobby();
+                      if (ref.watch(hostConnectionProvider).isAdvertising) {
+                        Navigator.of(context)
+                            .pushReplacementNamed(LobbyScreen.route);
+                      }
                     },
                     backgroundColor: Constants.primaryColor,
                     icon: 'res/icons/wifi_house.svg',

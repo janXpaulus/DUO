@@ -72,6 +72,8 @@ class _GetUserDialogState extends ConsumerState<GetUserDialog> {
                       ),
                       keyboardType: TextInputType.text,
                       onSubmitted: (value) async {
+                        Navigator.of(context)
+                            .pushReplacementNamed(HomeScreen.route);
                         if (_controller.text.isEmpty) {
                           setState(() {
                             wrongUsername = true;
@@ -84,9 +86,10 @@ class _GetUserDialogState extends ConsumerState<GetUserDialog> {
                           int status = await ref
                               .read(apiProvider)
                               .registerUser(_controller.text);
+
+                          // TODO: Add logic for checking registered user again
+
                           if (status == 0) {
-                            Navigator.of(context)
-                                .pushReplacementNamed(HomeScreen.route);
                           } else {
                             debugPrint('Username not available');
                             setState(() {
@@ -109,20 +112,20 @@ class _GetUserDialogState extends ConsumerState<GetUserDialog> {
                             Colors.white, BlendMode.srcIn),
                       ),
                       onPressed: () async {
+                        Navigator.of(context)
+                            .pushReplacementNamed(HomeScreen.route);
                         if (_controller.text.isEmpty) {
                           setState(() {
-                            wrongUsername = true;
+                            //wrongUsername = true;
                           });
                         } else {
                           setState(() {
-                            loading = true;
+                            //loading = true;
                           });
                           int status = await ref
                               .read(apiProvider)
                               .registerUser(_controller.text);
                           if (status == 0) {
-                            Navigator.of(context)
-                                .pushReplacementNamed(HomeScreen.route);
                           } else {
                             print('registerUser returned $status');
                             setState(() {

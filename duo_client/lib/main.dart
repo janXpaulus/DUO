@@ -51,17 +51,17 @@ class _DuoAppState extends ConsumerState<DuoApp> {
         ),
         iconButtonTheme: IconButtonThemeData(
           style: ButtonStyle(
-            overlayColor: MaterialStateProperty.all(
+            overlayColor: WidgetStateProperty.all(
               Colors.white10,
             ),
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(
+            backgroundColor: WidgetStateProperty.all(
               Constants.primaryColor,
             ),
-            overlayColor: MaterialStateProperty.all(
+            overlayColor: WidgetStateProperty.all(
               Constants.primaryColorAccent,
             ),
           ),

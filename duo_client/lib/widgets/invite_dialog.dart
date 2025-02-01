@@ -1,18 +1,25 @@
 import 'package:duo_client/pb/friend.pb.dart';
-//import 'package:duo_client/provider/api_provider.dart';
-import 'package:duo_client/provider/friend_provider.dart';
 import 'package:duo_client/utils/constants.dart';
-import 'package:duo_client/widgets/friend_list_tile.dart';
 import 'package:duo_client/widgets/qr_join_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 class InviteDialog extends ConsumerWidget {
-  InviteDialog({super.key, required this.invideCode});
+  InviteDialog(
+      {super.key, required this.invideCode, required this.clientConnection});
+  //TODO: input inviteCode from lobby screen
 
   late final Friend friendInvited;
   final String invideCode;
+  final String clientConnection;
+
+  final Map<String, String> data = {
+    "serviceUuid": "9338175b-20ca-4173-bea3-32214c49cb3e",
+    "writeUuid": "fc384875-ee34-4f92-a0cf-b83479a69978",
+    "readUuid": "26ea668e-f15a-4e67-9bd1-454836fe91ad"
+  };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,19 +46,14 @@ class InviteDialog extends ConsumerWidget {
                       fontWeight: FontWeight.bold,
                       color: Colors.white70)),
               const SizedBox(height: 20),
-              Expanded(
-                  child: ListView(
-                children: ref.watch(friendProvider).friends.map((friend) {
-                  return FriendListTile(
-                    showIcons: false,
-                    friend: friend,
-                    onTap: () {
-                      friendInvited = friend;
-                      Navigator.of(context).pop(friendInvited);
-                    },
-                  );
-                }).toList(),
-              )),
+              Center(
+                child: QrImageView(
+                  data: clientConnection,
+                  version: QrVersions.auto,
+                  size: 200,
+                  backgroundColor: Colors.white,
+                ),
+              ),
               const SizedBox(height: Constants.defaultPadding),
               Padding(
                 padding: const EdgeInsets.symmetric(

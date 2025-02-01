@@ -104,7 +104,7 @@ class EmptySegmentText extends StatelessWidget {
         children: [
           SvgPicture.asset('res/icons/snooze.svg',
               colorFilter: ColorFilter.mode(
-                Theme.of(context).colorScheme.onBackground.withOpacity(0.54),
+                Theme.of(context).colorScheme.onSurface.withOpacity(0.54),
                 BlendMode.srcIn,
               )),
           const SizedBox(width: Constants.defaultPadding),
@@ -113,7 +113,7 @@ class EmptySegmentText extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: Theme.of(context)
                       .colorScheme
-                      .onBackground
+                      .onSurface
                       .withOpacity(0.54),
                 ),
           ),
