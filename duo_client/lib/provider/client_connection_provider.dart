@@ -23,7 +23,9 @@ class ClientConnectionProvider extends ChangeNotifier {
   late ClientConnection _connectionInformation = ClientConnection(
       playerId: "69696969-6969-6969-6969-69696abcdef0",
       notifyCharacteristicUuid: "12345678-1234-5678-1234-56789abcdef0",
-      writeCharacteristicUuid: "12345678-1234-5678-1234-56789abcdef1");
+      writeCharacteristicUuid: "12345678-1234-5678-1234-56789abcdef1",
+      isConnected: false,
+      isStack: false);
   //TODO: Have connectionInformation be populated by QR Code scanner result
 
   void reconnect() async {

@@ -37,7 +37,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
       ref.read(apiProvider).sendUserstatusUpdate(
           await ref.read(apiProvider).getToken(), FriendState.inLobby);
     });
-    ref.read(hostConnectionProvider).watchForConnectionStateChange();
+    ref.read(hostConnectionProvider).subscribeToPlayerRegistrations();
   }
 
   @override
@@ -148,33 +148,31 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                             ...hostConnection.connectedClients.entries
                                 .map((entry) {
                               final clientConnection = entry.value;
-                              return Padding(
-                                padding: const EdgeInsets.all(
-                                    Constants.defaultPadding / 2),
-                                child: UserTile(
-                                  user: User(name: clientConnection.playerName),
-                                  isStack: false,
-                                ),
-                              );
-                            }),
-                            ...hostConnection.connectedClients.values
-                                .map((clientConnection) {
-                              return Padding(
-                                padding: const EdgeInsets.all(
-                                    Constants.defaultPadding / 2),
-                                child: TextButton(
-                                  onPressed: () {
-                                    hostConnection.addPlayer();
-                                  },
+                              if (clientConnection.isConnected) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(
+                                      Constants.defaultPadding / 2),
+                                  child: UserTile(
+                                    user:
+                                        User(name: clientConnection.playerName),
+                                    isStack: clientConnection.isStack,
+                                  ),
+                                );
+                              } else {
+                                return Padding(
+                                  padding: const EdgeInsets.all(
+                                      Constants.defaultPadding / 2),
                                   child: AddTile(
                                     Dialog: InviteDialog(
-                                      invideCode: "shit",
-                                      clientConnection:
-                                          clientConnection.toJson().toString(),
-                                    ),
+                                        invideCode: "shit",
+                                        clientConnection: clientConnection
+                                            .toJson()
+                                            .toString(),
+                                        isConnected:
+                                            clientConnection.isConnected),
                                   ),
-                                ),
-                              );
+                                );
+                              }
                             }),
                           ]),
                     ),
@@ -204,7 +202,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                           backgroundColor:
                                               Constants.errorColor),
                                       onPressed: () async {
-                                        await hostConnection.stopAdvertising();
+                                        await hostConnection.leaveLobby();
                                         if (!hostConnection.isAdvertising) {
                                           print(
                                               'Disconnected sucessfully from lobby');

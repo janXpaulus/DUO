@@ -5,15 +5,16 @@ class ClientConnection {
   String notifyCharacteristicUuid;
   String writeCharacteristicUuid;
   bool isConnected;
+  bool isStack;
 
-  ClientConnection({
-    required this.playerId,
-    this.playerName,
-    this.centralUuid,
-    required this.notifyCharacteristicUuid,
-    required this.writeCharacteristicUuid,
-    required this.isConnected;
-  });
+  ClientConnection(
+      {required this.playerId,
+      this.playerName,
+      this.centralUuid,
+      required this.notifyCharacteristicUuid,
+      required this.writeCharacteristicUuid,
+      required this.isConnected,
+      required this.isStack});
 
   Map<String, dynamic> toJson() {
     return {
@@ -22,7 +23,8 @@ class ClientConnection {
       'centralUuid': centralUuid,
       'notifyCharacteristicUuid': notifyCharacteristicUuid,
       'writeCharacteristicUuid': writeCharacteristicUuid,
-      'isConnected': isConnected
+      'isConnected': isConnected,
+      'isStack': isStack
     };
   }
 }

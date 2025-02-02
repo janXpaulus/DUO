@@ -1,19 +1,21 @@
 import 'package:duo_client/pb/friend.pb.dart';
 import 'package:duo_client/utils/constants.dart';
-import 'package:duo_client/widgets/qr_join_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 
 class InviteDialog extends ConsumerWidget {
   InviteDialog(
-      {super.key, required this.invideCode, required this.clientConnection});
+      {super.key,
+      required this.invideCode,
+      required this.clientConnection,
+      required this.isConnected});
   //TODO: input inviteCode from lobby screen
 
   late final Friend friendInvited;
   final String invideCode;
   final String clientConnection;
+  late bool isConnected;
 
   final Map<String, String> data = {
     "serviceUuid": "9338175b-20ca-4173-bea3-32214c49cb3e",
@@ -61,31 +63,21 @@ class InviteDialog extends ConsumerWidget {
                 child: Row(
                   children: [
                     Text(
-                      'Join via Code:  $invideCode',
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      'Scan this with DUO app',
+                      selectionColor: Colors.white,
+                      style: TextStyle(color: Colors.white, fontSize: 20),
                     ),
                     const Spacer(),
-                    IconButton(
-                      onPressed: () => showDialog(
-                          context: context,
-                          builder: (context) => QrJoinDialog(
-                                title:
-                                    'Scan this QR code with the DUO app to join the group:',
-                                data: invideCode,
-                              )),
-                      icon: const Icon(
-                        Icons.qr_code_2_rounded,
-                        color: Colors.white54,
-                      ),
-                    ),
+                    isConnected
+                        ? Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 40,
+                          )
+                        : CircularProgressIndicator(
+                            color: Colors.white,
+                          ),
                     const SizedBox(width: Constants.defaultPadding / 2),
-                    IconButton(
-                      icon: const Icon(Icons.share, color: Colors.white54),
-                      onPressed: () async {
-                        await Share.share(
-                            'Join me on Duo using this code: *$invideCode*');
-                      },
-                    ),
                     // const SizedBox(width: Constants.defaultPadding / 2),
                   ],
                 ),

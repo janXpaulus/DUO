@@ -4,10 +4,13 @@ import 'dart:io';
 
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
 import 'package:duo_client/utils/models/client_connection_model.dart';
+import 'package:duo_client/utils/models/message_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+
+import '../utils/constants.dart';
 
 class HostConnectionProvider extends ChangeNotifier {
   final hostConnectionProvider =
@@ -24,6 +27,9 @@ class HostConnectionProvider extends ChangeNotifier {
 
   late Map<String, ClientConnection> _connectedClients = {};
 
+  late Map<ClientConnection, StreamSubscription> _clientStreamSubscriptions =
+      {};
+
   late List<GATTCharacteristic> _advertisedCharacteristics = [];
 
   late String _serviceUuid;
@@ -39,19 +45,27 @@ class HostConnectionProvider extends ChangeNotifier {
   Future<void> createLobby() async {
     _serviceUuid = "87654321-1234-5678-1234-56789abcdef1";
     //TODO: Generate random _serviceUuid
+
+    for (var client = 0; client <= Constants.maxPlayers; client++) {
+      addPlayer();
+    }
+
     _connectedClients["Host"] = ClientConnection(
         playerId: "shit",
         notifyCharacteristicUuid: "shit",
         writeCharacteristicUuid: "shit",
-        playerName: "Jan");
+        playerName: "Jan",
+        isConnected: true,
+        isStack: true);
     // TODO: Have this be dynamically populated with the app wide playerName that has been set
-    await stopAdvertising();
+
     await generateService();
     await startAdvertising();
   }
 
   Future<void> leaveLobby() async {
     await stopAdvertising();
+    _connectedClients.clear();
   }
 
   Future<void> startAdvertising() async {
@@ -117,18 +131,11 @@ class HostConnectionProvider extends ChangeNotifier {
         characteristics: _advertisedCharacteristics);
   }
 
-  Future<Map<String, String>> addPlayer() async {
-    String playerId = "69696969-6969-6969-6969-69696abcdef0";
-    String notifyCharacteristicUuid = "12345678-1234-5678-1234-56789abcdef0";
-    String writeCharacteristicUuid = "12345678-1234-5678-1234-56789abcdef1";
-    String testMessage = "addPlayer()";
-    //TODO: Generate Uuids
-
-    _connectedClients[playerId] = ClientConnection(
-        playerId: playerId,
-        notifyCharacteristicUuid: notifyCharacteristicUuid,
-        writeCharacteristicUuid: writeCharacteristicUuid,
-        isConnected: false);
+  Future<void> addPlayer() async {
+    final playerId = uuid.v4();
+    final notifyCharacteristicUuid = uuid.v4();
+    final writeCharacteristicUuid = uuid.v4();
+    String testMessage = "SHIT is working";
 
     _advertisedCharacteristics.add(GATTCharacteristic.mutable(
         uuid: UUID.fromString(notifyCharacteristicUuid),
@@ -136,43 +143,63 @@ class HostConnectionProvider extends ChangeNotifier {
         permissions: [GATTCharacteristicPermission.read],
         descriptors: []));
 
-    _advertisedCharacteristics.add(GATTCharacteristic.immutable(
-        uuid: UUID.fromString(writeCharacteristicUuid),
-        descriptors: [],
-        value: utf8.encode(testMessage)));
+    _advertisedCharacteristics.add(GATTCharacteristic.mutable(
+      uuid: UUID.fromString(writeCharacteristicUuid),
+      properties: [GATTCharacteristicProperty.write],
+      permissions: [GATTCharacteristicPermission.write],
+      descriptors: [],
+    ));
 
-    await stopAdvertising();
-    await startAdvertising();
+    _connectedClients[playerId] = ClientConnection(
+        playerId: playerId,
+        notifyCharacteristicUuid: notifyCharacteristicUuid,
+        writeCharacteristicUuid: writeCharacteristicUuid,
+        isConnected: false,
+        isStack: false);
 
-    late Map<String, String> playerCode = {};
-    playerCode["notifyCharacteristicUuid"] = notifyCharacteristicUuid;
-    playerCode["writeCharacteristicUuid"] = writeCharacteristicUuid;
     notifyListeners();
-    return playerCode;
   }
 
   String generateUuid() {
     return uuid.v4().toString();
   }
 
-  void subscribeToPlayerRegistrations() {
+  Future<void> subscribeToPlayerRegistrations() async {
     try {
-      StreamSubscription playerRegistrationReceived = _peripheralManager
-          .characteristicWriteRequested
-          .listen((eventArgs) async {
-        debugPrint("playerRegistrationReceived: $eventArgs");
-      });
+      debugPrint("Subscribing to player registrations");
+      for (var client
+          in _connectedClients.values.where((client) => !client.isConnected)) {
+        var subscription = _peripheralManager.characteristicWriteRequested
+            .listen((eventArgs) async {
+          if (eventArgs.characteristic.uuid ==
+              UUID.fromString(client.writeCharacteristicUuid)) {
+            final request = DuoMessage.fromUint8List(eventArgs.request.value);
+            final central = eventArgs.central;
+
+            if (request.type == "connection" && request.action == "register") {
+              client.playerName = request.parameters?.playerName;
+              client.centralUuid = central.uuid.toString();
+              client.isConnected = true;
+            }
+            notifyListeners();
+            debugPrint(
+                "Player Registration received for: ${request.parameters?.playerName}");
+          }
+        });
+        _clientStreamSubscriptions[client] = subscription;
+      }
     } catch (error) {
       debugPrint("Subscribing to player registrations failed: $error");
     }
     // TODO: Add subscription to wait for player registrations on writeCharacteristics and add playerName to specific ClientConnection
+    /*
     String targetUuid = uuid.v4();
     ClientConnection clientConnection = _connectedClients.values
         .firstWhere((client) => client.writeCharacteristicUuid == targetUuid);
     String playerName = clientConnection.writeCharacteristicUuid;
-  }
 
-  void subscribeToWriteCharacteristic() {}
+     */
+  }
 
   void sendMessage(String playerId, String message) {
     try {
