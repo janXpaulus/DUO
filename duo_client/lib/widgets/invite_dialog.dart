@@ -1,21 +1,21 @@
 import 'package:duo_client/pb/friend.pb.dart';
+import 'package:duo_client/provider/host_connection_provider.dart';
 import 'package:duo_client/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../utils/models/client_connection_model.dart';
+
 class InviteDialog extends ConsumerWidget {
-  InviteDialog(
-      {super.key,
-      required this.invideCode,
-      required this.clientConnection,
-      required this.isConnected});
+  InviteDialog({
+    super.key,
+    required this.clientConnection,
+  });
   //TODO: input inviteCode from lobby screen
 
   late final Friend friendInvited;
-  final String invideCode;
-  final String clientConnection;
-  late bool isConnected;
+  final ClientConnection clientConnection;
 
   final Map<String, String> data = {
     "serviceUuid": "9338175b-20ca-4173-bea3-32214c49cb3e",
@@ -30,6 +30,18 @@ class InviteDialog extends ConsumerWidget {
     // ref.read(apiProvider).getToken().then((token) {
     //   ref.read(apiProvider).getFriends(token);
     // });
+    bool watchIsConnected = ref
+        .watch(hostConnectionProvider)
+        .connectedClients
+        .entries
+        .firstWhere(
+            (entry) => entry.value.playerId == clientConnection.playerId)
+        .value
+        .isConnected;
+
+    if (watchIsConnected) {
+      Navigator.pop(context);
+    }
 
     return Dialog(
       backgroundColor: Constants.secondaryColorDark,
@@ -50,7 +62,7 @@ class InviteDialog extends ConsumerWidget {
               const SizedBox(height: 20),
               Center(
                 child: QrImageView(
-                  data: clientConnection,
+                  data: clientConnection.toJson().toString(),
                   version: QrVersions.auto,
                   size: 200,
                   backgroundColor: Colors.white,
@@ -68,7 +80,7 @@ class InviteDialog extends ConsumerWidget {
                       style: TextStyle(color: Colors.white, fontSize: 20),
                     ),
                     const Spacer(),
-                    isConnected
+                    watchIsConnected
                         ? Icon(
                             Icons.check,
                             color: Colors.white,

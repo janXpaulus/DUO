@@ -56,5 +56,11 @@ class ClientConnectionProvider extends ChangeNotifier {
 
   void writeCharacteristic(String message) {}
 
+  void joinLobby() {
+    try {} catch (error) {
+      debugPrint("Error when joining lobby: $error");
+    }
+  }
+
   //TODO: Add reconnect mechanism to reconnect when connectionState == true. Max timeout 5 minutes
 }

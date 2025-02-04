@@ -24,6 +24,7 @@ class _JoinDialogState extends ConsumerState<JoinDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+        backgroundColor: Constants.secondaryColorDark,
         insetPadding: const EdgeInsets.all(20),
         child: SizedBox(
           width: 400,

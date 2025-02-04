@@ -27,4 +27,15 @@ class ClientConnection {
       'isStack': isStack
     };
   }
+
+  factory ClientConnection.fromJson(Map<String, dynamic> json) {
+    return ClientConnection(
+        playerId: json['playerId'],
+        playerName: json['playerName'],
+        centralUuid: json['centralUuid'],
+        notifyCharacteristicUuid: json['notifyCharacteristicUuid'] ?? "",
+        writeCharacteristicUuid: json['writeCharacteristicUuid'] ?? "",
+        isConnected: json['isConnected'],
+        isStack: json['isStack']);
+  }
 }

@@ -164,12 +164,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                       Constants.defaultPadding / 2),
                                   child: AddTile(
                                     Dialog: InviteDialog(
-                                        invideCode: "shit",
-                                        clientConnection: clientConnection
-                                            .toJson()
-                                            .toString(),
-                                        isConnected:
-                                            clientConnection.isConnected),
+                                        clientConnection: clientConnection),
                                   ),
                                 );
                               }

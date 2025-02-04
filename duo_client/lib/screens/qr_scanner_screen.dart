@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:duo_client/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_scanner_overlay/qr_scanner_overlay.dart';
+
+import '../utils/models/client_connection_model.dart';
 
 class QrCodeScanner extends StatefulWidget {
   static const route = '/qr-code-scanner';
@@ -16,7 +19,9 @@ class QrCodeScanner extends StatefulWidget {
 class _QrCodeScannerState extends State<QrCodeScanner>
     with WidgetsBindingObserver {
   final MobileScannerController _controller = MobileScannerController(
-      detectionTimeoutMs: 500, detectionSpeed: DetectionSpeed.noDuplicates);
+      autoStart: true,
+      detectionTimeoutMs: 500,
+      detectionSpeed: DetectionSpeed.noDuplicates);
   Color borderColor = Colors.white;
   bool _isLoading = false;
 
@@ -87,41 +92,53 @@ class _QrCodeScannerState extends State<QrCodeScanner>
 
   Widget buildQrView(BuildContext context) {
     return MobileScanner(
-      scanWindow: Rect.fromCenter(
-          center: Offset(MediaQuery.of(context).size.width / 2,
-              MediaQuery.of(context).size.height / 2),
-          width: MediaQuery.of(context).size.width * 0.75,
-          height: MediaQuery.of(context).size.width * 0.75),
-      placeholderBuilder: (BuildContext context, Widget? widget) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-      controller: _controller,
-      onDetect: (data) => _foundQrCode(data.barcodes.first),
-    );
+        scanWindow: Rect.fromCenter(
+            center: Offset(MediaQuery.of(context).size.width / 2,
+                MediaQuery.of(context).size.height / 2),
+            width: MediaQuery.of(context).size.width * 0.75,
+            height: MediaQuery.of(context).size.width * 0.75),
+        placeholderBuilder: (BuildContext context, Widget? widget) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+        controller: _controller,
+        onDetect: (data) => _foundQrCode(data.barcodes.first));
   }
 
-  (bool isValid, String uuid) _validateQrData(String data) {
-    //has the form of id:$id
-    final String id = data.split(':')[1];
+  void printCode(Barcode barcode) {
+    //debugPrint("Detected QR code: ${data.rawValue}");
+    final encodedData = jsonDecode(barcode.rawValue ?? "");
+    ClientConnection clientConnection = ClientConnection.fromJson(encodedData);
+    debugPrint(
+        "writeCharacteristicUuid: ${clientConnection.writeCharacteristicUuid}");
+  }
 
-    if (id.isEmpty) {
-      return (false, "-1");
-    }
-    return (true, id);
+  bool _validateQrData(ClientConnection clientConnection) {
+    return clientConnection.notifyCharacteristicUuid.isNotEmpty &&
+        clientConnection.writeCharacteristicUuid.isNotEmpty;
   }
 
   void _foundQrCode(Barcode barcode) async {
-    debugPrint(barcode.rawValue ?? "");
+    debugPrint("Raw QR code data: ${barcode.rawValue ?? ""}");
     final data = barcode.rawValue ?? "";
-    final (isQrValid, id) = _validateQrData(data);
+    final encodedData = jsonDecode(data);
+    debugPrint("Encoded QR code data: $encodedData");
+
+    final ClientConnection clientConnection =
+        ClientConnection.fromJson(encodedData);
+    debugPrint(
+        "ClientConnection QR code data: ${clientConnection.notifyCharacteristicUuid}");
+    final isQrValid = _validateQrData(clientConnection);
+    debugPrint(isQrValid ? "QR code is valid!" : "QR code is invalid");
     if (isQrValid) {
       await setValidColor();
+      /*
       if (!mounted) return;
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop(id);
       }
+      */
     } else {
       if (borderColor == Colors.white) await setInvalidColor();
     }

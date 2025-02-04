@@ -40,6 +40,8 @@
 	</array>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>DUO needs Bluetooth permission to communicate with other devices</string>
+	<key>NSCameraUsageDescription</key>
+	<string>DUO needs Camera permission so it can scan other device&apos;s QR codes</string>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
