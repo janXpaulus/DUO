@@ -259,20 +259,6 @@ func (gm *GameManager) CreateGame(lobby *Lobby, lobbyId int32) (int, error) {
 		return 0, txErr
 	}
 
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("Error getting working directory: %v", err)
-	}
-	fmt.Println(wd)
-
-	files, err := os.ReadDir(wd)
-	if err != nil {
-		log.Fatalf("Error reading directory: %v", err)
-	}
-	for _, file := range files {
-		fmt.Println(file.Name())
-	}
-
 	// Load cards
 	filePath := "/uno_cards.json"
 	cards, cardIds, err := LoadCardsFromJSON(filePath)
