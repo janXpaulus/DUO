@@ -1,22 +1,24 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:duo_client/provider/client_connection_provider.dart';
 import 'package:duo_client/utils/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_scanner_overlay/qr_scanner_overlay.dart';
 
 import '../utils/models/client_connection_model.dart';
 
-class QrCodeScanner extends StatefulWidget {
+class QrCodeScanner extends ConsumerStatefulWidget {
   static const route = '/qr-code-scanner';
   const QrCodeScanner({super.key});
 
   @override
-  State<QrCodeScanner> createState() => _QrCodeScannerState();
+  ConsumerState<QrCodeScanner> createState() => _QrCodeScannerState();
 }
 
-class _QrCodeScannerState extends State<QrCodeScanner>
+class _QrCodeScannerState extends ConsumerState<QrCodeScanner>
     with WidgetsBindingObserver {
   final MobileScannerController _controller = MobileScannerController(
       autoStart: true,
@@ -139,6 +141,7 @@ class _QrCodeScannerState extends State<QrCodeScanner>
         Navigator.of(context).pop(id);
       }
       */
+      ref.read(clientConnectionProvider).handleConnection(clientConnection);
     } else {
       if (borderColor == Colors.white) await setInvalidColor();
     }

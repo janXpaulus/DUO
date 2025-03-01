@@ -84,7 +84,8 @@ class HostConnectionProvider extends ChangeNotifier {
         await _peripheralManager.removeAllServices();
 
         await _peripheralManager.addService(_service);
-        await _peripheralManager.startAdvertising(Advertisement(name: "DUO"));
+        await _peripheralManager.startAdvertising(
+            Advertisement(serviceUUIDs: [UUID.fromString(_serviceUuid)]));
         _isAdvertising = true;
         debugPrint("Started advertising");
         notifyListeners();

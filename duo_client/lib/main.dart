@@ -11,6 +11,7 @@ import 'package:duo_client/utils/connection/grpc_server_connection.dart';
 import 'package:duo_client/utils/constants.dart';
 import 'package:duo_client/widgets/get_user_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,6 +21,7 @@ import 'package:google_fonts/google_fonts.dart';
 GetIt getIt = GetIt.instance;
 
 void main() {
+  FlutterBluePlus.setLogLevel(LogLevel.verbose, color: true);
   runApp(const ProviderScope(child: DuoApp()));
 }
 

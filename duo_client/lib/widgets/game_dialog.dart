@@ -1,13 +1,15 @@
 import 'package:duo_client/provider/api_provider.dart';
+import 'package:duo_client/provider/client_connection_provider.dart';
 import 'package:duo_client/provider/host_connection_provider.dart';
 import 'package:duo_client/provider/storage_provider.dart';
 import 'package:duo_client/screens/lobby_screen.dart';
 import 'package:duo_client/utils/constants.dart';
 import 'package:duo_client/widgets/duo_container.dart';
-import 'package:duo_client/widgets/join_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
+import 'join_dialog.dart';
 
 /// A dialog that allows the user to create or join a game.
 ///
@@ -58,10 +60,23 @@ class _GameDialogState extends ConsumerState<GameDialog> {
                     backgroundColor: Constants.primaryColor,
                     icon: 'res/icons/wifi_house.svg',
                   ),
-                  const SizedBox(width: 20),
                   DuoSelectTile(
-                    title: 'Join Game',
-                    onPressed: () {
+                    title: !ref.watch(clientConnectionProvider).isDiscovering
+                        ? 'Join Game'
+                        : 'Leave Game',
+                    onPressed: () async {
+                      // if (!ref.read(clientConnectionProvider).isDiscovering) {
+                      //   ref.read(clientConnectionProvider).initializeBle();
+                      //   await ref
+                      //       .read(clientConnectionProvider)
+                      //       .startDiscovery(serviceUUIDs: []);
+                      // } else {
+                      //   await ref
+                      //       .read(clientConnectionProvider)
+                      //       .stopDiscovery();
+                      // }
+                      //ref.read(await ClientConnectionProvider().onStartScan());
+
                       showDialog(
                           context: context,
                           builder: (context) => const JoinDialog());
@@ -96,7 +111,8 @@ class DuoSelectTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(Constants.defaultPadding),
       child: DuoContainer(
-        width: 140,
+        width: 70,
+        height: 150,
         backgroundColor: backgroundColor,
         child: Material(
           color: Colors.transparent,
@@ -114,7 +130,7 @@ class DuoSelectTile extends StatelessWidget {
                 Text(title,
                     style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 20,
+                        fontSize: 15,
                         color: Colors.white70)),
                 const SizedBox(height: 10),
               ],
