@@ -87,6 +87,7 @@ type Game struct {
 	WaitingForDrawCount int32 //How many cards need to be drawn, before the next player can play [NOT IMPLEMENTED YET]
 	Direction           pb.Direction
 	Mu                  sync.RWMutex
+	CardMap             map[string]Card
 }
 
 func NewGame(cardIds []string) *Game {
@@ -161,10 +162,18 @@ func (gm *GameManager) CreateGame(lobby *Lobby, lobbyId int32) (int, error) {
 		log.Fatalf("Error loading cards: %v", err)
 		return 0, err
 	}
-	_ = cards // TODO: Use cards to implement game logic
+
+	cardMap := make(map[string]Card)
+	for _, c := range cards {
+		cardMap[c.CardId] = c
+	}
+
+	//_ = cards // TODO: Use cards to implement game logic
 
 	gm.Mu.Lock()
-	gm.GameStreams[int(dbGame.ID)] = NewGame(cardIds) //TODO make cards dynamic
+	newG := NewGame(cardIds)
+	newG.CardMap = cardMap // attach the full card info to the game
+	gm.GameStreams[int(dbGame.ID)] = newG
 	gm.Mu.Unlock()
 
 	shuffleErr := gm.shuffleDrawStack(int(dbGame.ID), true)
@@ -613,6 +622,9 @@ func (gm *GameManager) AddPlayerStream(gameId int, userId uuid.UUID, stream pb.D
 			}
 
 			//TODO: Check for wrong card color or number ...
+			log.Printf("[Player stream] Checking card color/number for card %s against top card %s", recvMsg.CardId, game.CardsOnPlaceStack[len(game.CardsOnPlaceStack)-1])
+
+			log.Printf("Card info: %v", game.CardMap[recvMsg.CardId].CardColor)
 
 			//Check if card is in players hand
 			playerIndex := -1
