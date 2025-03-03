@@ -1,0 +1,404 @@
+{
+	"cards": [
+	  {
+		"CardId": "red_1",
+		"CardColor": "red",
+		"CardValue": "1",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "red_2",
+		"CardColor": "red",
+		"CardValue": "2",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "red_3",
+		"CardColor": "red",
+		"CardValue": "3",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "red_4",
+		"CardColor": "red",
+		"CardValue": "4",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "red_5",
+		"CardColor": "red",
+		"CardValue": "5",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "red_6",
+		"CardColor": "red",
+		"CardValue": "6",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "red_7",
+		"CardColor": "red",
+		"CardValue": "7",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "red_8",
+		"CardColor": "red",
+		"CardValue": "8",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "red_9",
+		"CardColor": "red",
+		"CardValue": "9",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "red_suspend",
+		"CardColor": "red",
+		"CardValue": "suspend",
+		"CardType": "special",
+		"SpecialEffect": "suspend",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "red_draw_2",
+		"CardColor": "red",
+		"CardValue": "draw_2",
+		"CardType": "special",
+		"SpecialEffect": "draw_2",
+		"CardCount": 2
+	  },
+      {
+		"CardId": "red_change_directions",
+		"CardColor": "red",
+		"CardValue": "change_directions",
+		"CardType": "special",
+		"SpecialEffect": "change_directions",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "purple_1",
+		"CardColor": "purple",
+		"CardValue": "1",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "purple_2",
+		"CardColor": "purple",
+		"CardValue": "2",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "purple_3",
+		"CardColor": "purple",
+		"CardValue": "3",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "purple_4",
+		"CardColor": "purple",
+		"CardValue": "4",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "purple_5",
+		"CardColor": "purple",
+		"CardValue": "5",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "purple_6",
+		"CardColor": "purple",
+		"CardValue": "6",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "purple_7",
+		"CardColor": "purple",
+		"CardValue": "7",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "purple_8",
+		"CardColor": "purple",
+		"CardValue": "8",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "purple_9",
+		"CardColor": "purple",
+		"CardValue": "9",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "purple_suspend",
+		"CardColor": "purple",
+		"CardValue": "suspend",
+		"CardType": "special",
+		"SpecialEffect": "suspend",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "purple_draw_2",
+		"CardColor": "purple",
+		"CardValue": "draw_2",
+		"CardType": "special",
+		"SpecialEffect": "draw_2",
+		"CardCount": 2
+	  },
+      {
+		"CardId": "purple_change_directions",
+		"CardColor": "purple",
+		"CardValue": "change_directions",
+		"CardType": "special",
+		"SpecialEffect": "change_directions",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "green_1",
+		"CardColor": "green",
+		"CardValue": "1",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "green_2",
+		"CardColor": "green",
+		"CardValue": "2",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "green_3",
+		"CardColor": "green",
+		"CardValue": "3",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "green_4",
+		"CardColor": "green",
+		"CardValue": "4",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "green_5",
+		"CardColor": "green",
+		"CardValue": "5",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "green_6",
+		"CardColor": "green",
+		"CardValue": "6",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "green_7",
+		"CardColor": "green",
+		"CardValue": "7",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "green_8",
+		"CardColor": "green",
+		"CardValue": "8",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "green_9",
+		"CardColor": "green",
+		"CardValue": "9",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "green_suspend",
+		"CardColor": "green",
+		"CardValue": "suspend",
+		"CardType": "special",
+		"SpecialEffect": "suspend",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "green_draw_2",
+		"CardColor": "green",
+		"CardValue": "draw_2",
+		"CardType": "special",
+		"SpecialEffect": "draw_2",
+		"CardCount": 2
+	  },
+      {
+		"CardId": "green_change_directions",
+		"CardColor": "green",
+		"CardValue": "change_directions",
+		"CardType": "special",
+		"SpecialEffect": "change_directions",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "yellow_1",
+		"CardColor": "yellow",
+		"CardValue": "1",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "yellow_2",
+		"CardColor": "yellow",
+		"CardValue": "2",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "yellow_3",
+		"CardColor": "yellow",
+		"CardValue": "3",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "yellow_4",
+		"CardColor": "yellow",
+		"CardValue": "4",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "yellow_5",
+		"CardColor": "yellow",
+		"CardValue": "5",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "yellow_6",
+		"CardColor": "yellow",
+		"CardValue": "6",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "yellow_7",
+		"CardColor": "yellow",
+		"CardValue": "7",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "yellow_8",
+		"CardColor": "yellow",
+		"CardValue": "8",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "yellow_9",
+		"CardColor": "yellow",
+		"CardValue": "9",
+		"CardType": "number",
+		"SpecialEffect": "",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "yellow_suspend",
+		"CardColor": "yellow",
+		"CardValue": "suspend",
+		"CardType": "special",
+		"SpecialEffect": "suspend",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "yellow_draw_2",
+		"CardColor": "yellow",
+		"CardValue": "draw_2",
+		"CardType": "special",
+		"SpecialEffect": "draw_2",
+		"CardCount": 2
+	  },
+      {
+		"CardId": "yellow_change_directions",
+		"CardColor": "yellow",
+		"CardValue": "change_directions",
+		"CardType": "special",
+		"SpecialEffect": "change_directions",
+		"CardCount": 2
+	  },
+	  {
+		"CardId": "wild_select_color",
+		"CardColor": "wild",
+		"CardValue": "select_color",
+		"CardType": "special",
+		"SpecialEffect": "select_color",
+		"CardCount": 4
+	  },
+      {
+		"CardId": "wild_draw_4",
+		"CardColor": "wild",
+		"CardValue": "draw_4",
+		"CardType": "special",
+		"SpecialEffect": "draw_4",
+		"CardCount": 4
+	  }
+	]
+  }
