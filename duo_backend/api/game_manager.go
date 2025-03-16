@@ -621,10 +621,26 @@ func (gm *GameManager) AddPlayerStream(gameId int, userId uuid.UUID, stream pb.D
 				continue
 			}
 
-			//TODO: Check for wrong card color or number ...
-			log.Printf("[Player stream] Checking card color/number for card %s against top card %s", recvMsg.CardId, game.CardsOnPlaceStack[len(game.CardsOnPlaceStack)-1])
+			// Get the card to place and the top card on the stack
+			cardToPlace := game.CardMap[recvMsg.CardId]
+			log.Printf("cardToPlace: %v", cardToPlace.CardId)
 
-			log.Printf("Card info: %v", game.CardMap[recvMsg.CardId].CardColor)
+			topCardOnStack := game.CardMap[game.CardsOnPlaceStack[len(game.CardsOnPlaceStack)-1]]
+			log.Printf("topCardOnStack: %v", topCardOnStack.CardId)
+		
+			// Check if the card can be placed
+			if !CanPlaceCard(cardToPlace, topCardOnStack) {
+				//log.Printf("[Player stream] card %v cannot be placed on top of card %v", recvMsg.CardId, game.CardsOnPlaceStack[len(game.CardsOnPlaceStack)-1])
+				log.Printf("[Player stream] card %v cannot be placed on top of card %v", cardToPlace.CardId, topCardOnStack.CardId)
+				// TODO players turn again
+				game.Mu.RUnlock()
+				continue
+			}
+
+			//TODO: Check for wrong card color or number ...
+			//log.Printf("[Player stream] Checking card color/number for card %s against top card %s", recvMsg.CardId, game.CardsOnPlaceStack[len(game.CardsOnPlaceStack)-1])
+
+			//log.Printf("Card info: %v", game.CardMap[recvMsg.CardId].CardColor)
 
 			//Check if card is in players hand
 			playerIndex := -1
