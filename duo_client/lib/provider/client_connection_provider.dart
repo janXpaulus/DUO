@@ -3,10 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
-import 'package:duo_client/utils/models/client_connection_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../utils/models/host_connection_model.dart';
 
 class ClientConnectionProvider extends ChangeNotifier {
   late final List<DiscoveredEventArgs> _discoveries = [];
@@ -22,36 +23,47 @@ class ClientConnectionProvider extends ChangeNotifier {
 
   bool _isConnected = false;
 
-  bool _isConnectionWanted = false;
+  bool _isConnectionWanted = true;
 
-  late ClientConnection _connectionInformation = ClientConnection(
-      playerId: "69696969-6969-6969-6969-69696abcdef0",
-      notifyCharacteristicUuid: "12345678-1234-5678-1234-56789abcdef0",
-      writeCharacteristicUuid: "12345678-1234-5678-1234-56789abcdef1",
-      isConnected: false,
-      isStack: false);
+  late HostConnection _connectionInformation = HostConnection(
+    playerId: "",
+    notifyCharacteristicUuid: "",
+    writeCharacteristicUuid: "",
+    isConnected: false,
+    serviceUuid: "",
+  );
+
   // TODO: Have connectionInformation be populated by QR Code scanner result
 
   final _serviceUuid = UUID.fromString("87654321-1234-5678-1234-56789abcdef1");
 
   BluetoothLowEnergyState get state => _centralManager.state;
+
   bool get isDiscovering => _isDiscovering;
+
   List<DiscoveredEventArgs> get discoveries => _discoveries;
+
   UUID get serviceUuids => _serviceUuid;
+
   bool get isConnectionWanted => _isConnectionWanted;
 
-  Future<void> handleConnection(ClientConnection clientConnection) async {
+  Future<void> handleConnection(HostConnection hostConnection) async {
+    _connectionInformation = hostConnection;
     await initializeBle();
 
     while (_isConnectionWanted) {
-      await startDiscovery(serviceUUIDs: [_serviceUuid]);
+      await startDiscovery(
+          serviceUUIDs: [UUID.fromString(_connectionInformation.serviceUuid)]);
       while (_isDiscovering) {
         var lastDiscovery = _discoveries.last;
-        if (lastDiscovery.advertisement.serviceUUIDs == [_serviceUuid]) {
+        if (lastDiscovery.advertisement.serviceUUIDs ==
+            [UUID.fromString(_connectionInformation.serviceUuid)]) {
           stopDiscovery();
           await connectToPeripheral(lastDiscovery.peripheral);
           // TODO: set properties for connection in one central point of client connection provider
-          //await registerPlayer("Shitty shit", lastDiscovery.peripheral, GATTCharacteristic(properties: [GATTCharacteristicProperty.notify]), value)
+          debugPrint("Found host device");
+
+          await registerPlayer("Shitty shit", lastDiscovery.peripheral);
         }
       }
     }
@@ -117,7 +129,9 @@ class ClientConnectionProvider extends ChangeNotifier {
   Future<void> joinLobby() async {
     try {
       var duoPeripheral = _discoveries
-          .where((test) => test.advertisement.serviceUUIDs.last == _serviceUuid)
+          .where((test) =>
+              test.advertisement.serviceUUIDs.last ==
+              UUID.fromString(_connectionInformation.serviceUuid))
           .last
           .peripheral
           .uuid;
@@ -138,14 +152,27 @@ class ClientConnectionProvider extends ChangeNotifier {
     _centralManager.connect(peripheral);
   }
 
-  registerPlayer(String playerName, Peripheral peripheral,
-      GATTCharacteristic characteristic, String value) {
+  registerPlayer(String playerName, Peripheral peripheral) {
+    final characteristic = GATTCharacteristic.immutable(
+        uuid: UUID.fromString(_connectionInformation.writeCharacteristicUuid),
+        value: utf8.encode("shit"),
+        descriptors: [
+          GATTDescriptor.immutable(
+              uuid: UUID
+                  .fromString(_connectionInformation.writeCharacteristicUuid),
+              value: utf8.encode("shit"))
+        ]);
+    var value = {
+      "type": "connection",
+      "action": "register",
+      "parameters": {"playerName": "Jann"}
+    };
     _centralManager.writeCharacteristic(peripheral, characteristic,
-        value: utf8.encode(value),
+        value: utf8.encode(jsonEncode(value)),
         type: GATTCharacteristicWriteType.withResponse);
   }
 
-  // TODO: Add reconnect mechanism to reconnect when connectionState == true. Max timeout 5 minutes
+// TODO: Add reconnect mechanism to reconnect when connectionState == true. Max timeout 5 minutes
 }
 
 final clientConnectionProvider =

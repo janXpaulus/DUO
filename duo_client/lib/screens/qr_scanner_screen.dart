@@ -1,17 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:duo_client/provider/client_connection_provider.dart';
 import 'package:duo_client/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_scanner_overlay/qr_scanner_overlay.dart';
 
+import '../provider/client_connection_provider.dart';
 import '../utils/models/client_connection_model.dart';
+import '../utils/models/host_connection_model.dart';
 
 class QrCodeScanner extends ConsumerStatefulWidget {
   static const route = '/qr-code-scanner';
+
   const QrCodeScanner({super.key});
 
   @override
@@ -116,34 +118,40 @@ class _QrCodeScannerState extends ConsumerState<QrCodeScanner>
         "writeCharacteristicUuid: ${clientConnection.writeCharacteristicUuid}");
   }
 
-  bool _validateQrData(ClientConnection clientConnection) {
-    return clientConnection.notifyCharacteristicUuid.isNotEmpty &&
-        clientConnection.writeCharacteristicUuid.isNotEmpty;
+  bool _validateQrData(HostConnection hostConnection) {
+    debugPrint(hostConnection.toString());
+    return hostConnection.notifyCharacteristicUuid.isNotEmpty &&
+        hostConnection.writeCharacteristicUuid.isNotEmpty;
   }
 
   void _foundQrCode(Barcode barcode) async {
-    debugPrint("Raw QR code data: ${barcode.rawValue ?? ""}");
-    final data = barcode.rawValue ?? "";
-    final encodedData = jsonDecode(data);
-    debugPrint("Encoded QR code data: $encodedData");
+    try {
+      debugPrint("Raw QR code data: ${barcode.rawValue ?? ""}");
+      final data = barcode.rawValue ?? "";
 
-    final ClientConnection clientConnection =
-        ClientConnection.fromJson(encodedData);
-    debugPrint(
-        "ClientConnection QR code data: ${clientConnection.notifyCharacteristicUuid}");
-    final isQrValid = _validateQrData(clientConnection);
-    debugPrint(isQrValid ? "QR code is valid!" : "QR code is invalid");
-    if (isQrValid) {
-      await setValidColor();
-      /*
-      if (!mounted) return;
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop(id);
+      final encodedData = jsonDecode(data);
+      debugPrint("Encoded QR code data: $encodedData");
+
+      final HostConnection hostConnection =
+          HostConnection.fromJson(encodedData);
+      debugPrint(
+          "ClientConnection QR code data: ${hostConnection.notifyCharacteristicUuid}");
+      final isQrValid = _validateQrData(hostConnection);
+      debugPrint(isQrValid ? "QR code is valid!" : "QR code is invalid");
+      if (isQrValid) {
+        await setValidColor();
+        /*
+        if (!mounted) return;
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop(id);
+        }
+        */
+        ref.read(clientConnectionProvider).handleConnection(hostConnection);
+      } else {
+        if (borderColor == Colors.white) await setInvalidColor();
       }
-      */
-      ref.read(clientConnectionProvider).handleConnection(clientConnection);
-    } else {
-      if (borderColor == Colors.white) await setInvalidColor();
+    } on Exception catch (e) {
+      debugPrint("$e");
     }
   }
 }

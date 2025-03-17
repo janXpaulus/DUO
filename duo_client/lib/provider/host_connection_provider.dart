@@ -42,6 +42,8 @@ class HostConnectionProvider extends ChangeNotifier {
 
   bool get isAdvertising => _isAdvertising;
 
+  String get serviceUuid => _serviceUuid;
+
   Future<void> createLobby() async {
     _serviceUuid = "87654321-1234-5678-1234-56789abcdef1";
     //TODO: Generate random _serviceUuid
@@ -192,7 +194,6 @@ class HostConnectionProvider extends ChangeNotifier {
     } catch (error) {
       debugPrint("Subscribing to player registrations failed: $error");
     }
-    // TODO: Add subscription to wait for player registrations on writeCharacteristics and add playerName to specific ClientConnection
     /*
     String targetUuid = uuid.v4();
     ClientConnection clientConnection = _connectedClients.values

@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+import '../utils/models/host_connection_model.dart';
 import '../widgets/add_tile.dart';
 import '../widgets/invite_dialog.dart';
 
@@ -60,7 +61,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
     bool gameReady = ref.watch(apiProvider).gameId > 0 &&
         ref.watch(apiProvider).lobbyStatus == null;
 
-    final hostConnection = ref.watch(hostConnectionProvider);
+    final watchHostConnectionProvider = ref.watch(hostConnectionProvider);
 
     return Scaffold(
       backgroundColor: Constants.bgColor,
@@ -145,9 +146,20 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                             childAspectRatio: 1.5,
                           ),
                           children: [
-                            ...hostConnection.connectedClients.entries
+                            ...watchHostConnectionProvider
+                                .connectedClients.entries
                                 .map((entry) {
                               final clientConnection = entry.value;
+
+                              final hostConnection = HostConnection(
+                                  playerId: clientConnection.playerId,
+                                  serviceUuid:
+                                      watchHostConnectionProvider.serviceUuid,
+                                  notifyCharacteristicUuid:
+                                      clientConnection.notifyCharacteristicUuid,
+                                  writeCharacteristicUuid:
+                                      clientConnection.writeCharacteristicUuid,
+                                  isConnected: false);
                               if (clientConnection.isConnected) {
                                 return Padding(
                                   padding: const EdgeInsets.all(
@@ -164,7 +176,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                       Constants.defaultPadding / 2),
                                   child: AddTile(
                                     Dialog: InviteDialog(
-                                        clientConnection: clientConnection),
+                                        hostConnection: hostConnection),
                                   ),
                                 );
                               }
@@ -197,8 +209,10 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                           backgroundColor:
                                               Constants.errorColor),
                                       onPressed: () async {
-                                        await hostConnection.leaveLobby();
-                                        if (!hostConnection.isAdvertising) {
+                                        await watchHostConnectionProvider
+                                            .leaveLobby();
+                                        if (!watchHostConnectionProvider
+                                            .isAdvertising) {
                                           print(
                                               'Disconnected sucessfully from lobby');
                                           Navigator.of(context)

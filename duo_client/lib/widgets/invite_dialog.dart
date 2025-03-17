@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:duo_client/pb/friend.pb.dart';
 import 'package:duo_client/provider/host_connection_provider.dart';
 import 'package:duo_client/utils/constants.dart';
@@ -5,17 +7,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import '../utils/models/client_connection_model.dart';
+import '../utils/models/host_connection_model.dart';
 
 class InviteDialog extends ConsumerWidget {
   InviteDialog({
     super.key,
-    required this.clientConnection,
+    required this.hostConnection,
   });
+
   //TODO: input inviteCode from lobby screen
 
   late final Friend friendInvited;
-  final ClientConnection clientConnection;
+  final HostConnection hostConnection;
 
   final Map<String, String> data = {
     "serviceUuid": "9338175b-20ca-4173-bea3-32214c49cb3e",
@@ -34,8 +37,7 @@ class InviteDialog extends ConsumerWidget {
         .watch(hostConnectionProvider)
         .connectedClients
         .entries
-        .firstWhere(
-            (entry) => entry.value.playerId == clientConnection.playerId)
+        .firstWhere((entry) => entry.value.playerId == hostConnection.playerId)
         .value
         .isConnected;
 
@@ -62,7 +64,7 @@ class InviteDialog extends ConsumerWidget {
               const SizedBox(height: 20),
               Center(
                 child: QrImageView(
-                  data: clientConnection.toJson().toString(),
+                  data: jsonEncode(hostConnection.toJson()),
                   version: QrVersions.auto,
                   size: 200,
                   backgroundColor: Colors.white,
