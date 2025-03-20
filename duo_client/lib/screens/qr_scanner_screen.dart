@@ -32,6 +32,8 @@ class _QrCodeScannerState extends ConsumerState<QrCodeScanner>
   @override
   void dispose() {
     _controller.dispose();
+    _controller.stop();
+
     super.dispose();
   }
 
@@ -59,6 +61,7 @@ class _QrCodeScannerState extends ConsumerState<QrCodeScanner>
             right: 20,
             child: IconButton(
               onPressed: () {
+                _controller.stop();
                 if (Navigator.of(context).canPop()) {
                   Navigator.of(context).pop();
                 }
@@ -107,7 +110,12 @@ class _QrCodeScannerState extends ConsumerState<QrCodeScanner>
           );
         },
         controller: _controller,
-        onDetect: (data) => _foundQrCode(data.barcodes.first));
+        // onDetect: (data) => _foundQrCode(data.barcodes.first));
+
+        onDetect: (data) {
+          if (!mounted) return;
+          _foundQrCode(data.barcodes.first);
+        });
   }
 
   void printCode(Barcode barcode) {
@@ -125,33 +133,36 @@ class _QrCodeScannerState extends ConsumerState<QrCodeScanner>
   }
 
   void _foundQrCode(Barcode barcode) async {
+    if (_isLoading) return; // Prevent multiple scans
+    setState(() {
+      _isLoading = true;
+    });
+
+    debugPrint("Raw QR code data: ${barcode.rawValue ?? ""}");
+    final data = barcode.rawValue ?? "";
+
     try {
-      debugPrint("Raw QR code data: ${barcode.rawValue ?? ""}");
-      final data = barcode.rawValue ?? "";
-
       final encodedData = jsonDecode(data);
-      debugPrint("Encoded QR code data: $encodedData");
-
       final HostConnection hostConnection =
           HostConnection.fromJson(encodedData);
-      debugPrint(
-          "ClientConnection QR code data: ${hostConnection.notifyCharacteristicUuid}");
+
       final isQrValid = _validateQrData(hostConnection);
-      debugPrint(isQrValid ? "QR code is valid!" : "QR code is invalid");
       if (isQrValid) {
         await setValidColor();
-        /*
         if (!mounted) return;
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop(id);
-        }
-        */
+        Navigator.of(context).pop();
         ref.read(clientConnectionProvider).handleConnection(hostConnection);
       } else {
         if (borderColor == Colors.white) await setInvalidColor();
       }
-    } on Exception catch (e) {
-      debugPrint("$e");
+    } catch (e) {
+      debugPrint("QR processing error: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 }

@@ -15,6 +15,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:logging/logging.dart';
 
 /// Main entry point for accessing the service locator
 /// It helps getting the current AbstractServerConnection instance
@@ -22,6 +23,7 @@ GetIt getIt = GetIt.instance;
 
 void main() {
   FlutterBluePlus.setLogLevel(LogLevel.verbose, color: true);
+  hierarchicalLoggingEnabled = true;
   runApp(const ProviderScope(child: DuoApp()));
 }
 

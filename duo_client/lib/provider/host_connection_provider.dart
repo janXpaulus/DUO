@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
 import 'package:duo_client/utils/models/client_connection_model.dart';
 import 'package:duo_client/utils/models/message_model.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -45,7 +44,7 @@ class HostConnectionProvider extends ChangeNotifier {
   String get serviceUuid => _serviceUuid;
 
   Future<void> createLobby() async {
-    _serviceUuid = "87654321-1234-5678-1234-56789abcdef1";
+    _serviceUuid = uuid.v4();
     //TODO: Generate random _serviceUuid
 
     for (var client = 0; client <= Constants.maxPlayers; client++) {
@@ -86,8 +85,18 @@ class HostConnectionProvider extends ChangeNotifier {
         await _peripheralManager.removeAllServices();
 
         await _peripheralManager.addService(_service);
-        await _peripheralManager.startAdvertising(
-            Advertisement(serviceUUIDs: [UUID.fromString(_serviceUuid)]));
+        await _peripheralManager.startAdvertising(Advertisement(
+          name: "DUO",
+          serviceUUIDs: [UUID.fromString(_serviceUuid)],
+          manufacturerSpecificData: Platform.isIOS || Platform.isMacOS
+              ? []
+              : [
+                  ManufacturerSpecificData(
+                    id: 0x2e19,
+                    data: Uint8List.fromList([0x01, 0x02, 0x03]),
+                  )
+                ],
+        ));
         _isAdvertising = true;
         debugPrint("Started advertising");
         notifyListeners();

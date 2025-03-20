@@ -1,4 +1,5 @@
 import 'package:duo_client/provider/api_provider.dart';
+import 'package:duo_client/provider/client_connection_provider.dart';
 import 'package:duo_client/screens/home_screen.dart';
 import 'package:duo_client/utils/constants.dart';
 import 'package:duo_client/widgets/duo_container.dart';
@@ -83,13 +84,13 @@ class _GetUserDialogState extends ConsumerState<GetUserDialog> {
                           setState(() {
                             loading = true;
                           });
-                          int status = await ref
-                              .read(apiProvider)
-                              .registerUser(_controller.text);
+                          bool status = await ref
+                              .read(clientConnectionProvider)
+                              .setPlayerName(_controller.text);
 
                           // TODO: Add logic for checking registered user again
 
-                          if (status == 0) {
+                          if (status) {
                           } else {
                             debugPrint('Username not available');
                             setState(() {

@@ -111,7 +111,7 @@ class DuoSelectTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(Constants.defaultPadding),
       child: DuoContainer(
-        width: 70,
+        width: 150,
         height: 150,
         backgroundColor: backgroundColor,
         child: Material(
