@@ -632,7 +632,7 @@ func (gm *GameManager) AddPlayerStream(gameId int, userId uuid.UUID, stream pb.D
 			if !CanPlaceCard(cardToPlace, topCardOnStack) {
 				//log.Printf("[Player stream] card %v cannot be placed on top of card %v", recvMsg.CardId, game.CardsOnPlaceStack[len(game.CardsOnPlaceStack)-1])
 				log.Printf("[Player stream] card %v cannot be placed on top of card %v", cardToPlace.CardId, topCardOnStack.CardId)
-				// TODO players turn again
+				// XXX players turn again
 				game.Mu.RUnlock()
 				continue
 			}
@@ -678,13 +678,21 @@ func (gm *GameManager) AddPlayerStream(gameId int, userId uuid.UUID, stream pb.D
 			//Place card on place stack
 			game.CardsOnPlaceStack = append(game.CardsOnPlaceStack, recvMsg.CardId)
 
+			playerOffset := 1 // Normal turn
+
+
+			if isSpecialCard(cardToPlace) { // FIXME
+				playerOffset, game.Direction = handleSpecialCard(cardToPlace, game)
+			}
+
+
 			//TODO: Check for special cards
 			game.Mu.Unlock()
 
 			gm.UpdatePlayersCards(gameId, userId.String(), game.UserStreams[playerIndex].PlayersCards)
 			log.Printf("[Player stream] player %v has following cards left: %v", userId, game.UserStreams[playerIndex].PlayersCards)
 
-			nextPlayerUuid, nextPlayerName, nextPlayerErr := gm.GetNextPlayer(gameId, game.Direction == pb.Direction_CLOCKWISE, 1)
+			nextPlayerUuid, nextPlayerName, nextPlayerErr := gm.GetNextPlayer(gameId, game.Direction == pb.Direction_CLOCKWISE, playerOffset)
 			if nextPlayerErr != nil {
 				log.Printf("[Player stream] error getting next player: %v", nextPlayerErr)
 				break
