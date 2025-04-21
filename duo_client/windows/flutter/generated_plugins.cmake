@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  bluetooth_low_energy_windows
   flutter_secure_storage_windows
   share_plus
   url_launcher_windows

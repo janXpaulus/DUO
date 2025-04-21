@@ -32,6 +32,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
   bool joiningGame = false;
 
   // TODO: load lobby data from client_connection_provider
+  // TODO: Add client mode and host mode to distinguish needed methods
 
   @override
   void initState() {

@@ -92,7 +92,6 @@ flutter:
     - assets/game/
     - assets/
     - assets/game/duo_cards/
-    - app.env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
