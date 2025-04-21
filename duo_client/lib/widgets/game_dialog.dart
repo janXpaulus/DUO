@@ -48,9 +48,9 @@ class _GameDialogState extends ConsumerState<GameDialog> {
                   DuoSelectTile(
                     title: 'Host Game',
                     onPressed: () async {
-                      ref.read(apiProvider).createLobby(
-                          ref.read(storageProvider).accessToken,
-                          Constants.maxPlayers);
+                      // ref.read(apiProvider).createLobby(
+                      //     ref.read(storageProvider).accessToken,
+                      //     Constants.maxPlayers);
                       await ref.read(hostConnectionProvider).createLobby();
                       if (ref.watch(hostConnectionProvider).isAdvertising) {
                         Navigator.of(context)

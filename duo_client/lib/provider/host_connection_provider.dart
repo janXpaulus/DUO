@@ -19,29 +19,23 @@ class HostConnectionProvider extends ChangeNotifier {
 
   final PeripheralManager _peripheralManager = PeripheralManager();
   final uuid = Uuid();
-
   late StreamSubscription _managerStateChangedSubscription;
-
   late StreamSubscription _connectionStateChangedSubscription;
-
-  late Map<String, ClientConnection> _connectedClients = {};
-
+  late Map<String, ClientConnection> _clientSlots = {};
+  late List<ClientConnection> _connectedClients = [];
   late Map<ClientConnection, StreamSubscription> _clientStreamSubscriptions =
       {};
-
   late List<GATTCharacteristic> _advertisedCharacteristics = [];
-
   late String _serviceUuid;
-
   late GATTService _service;
-
   late bool _isAdvertising = false;
+  bool _isGameReady = false;
 
-  Map<String, ClientConnection> get connectedClients => _connectedClients;
-
+  Map<String, ClientConnection> get clientSlots => _clientSlots;
   bool get isAdvertising => _isAdvertising;
-
   String get serviceUuid => _serviceUuid;
+  List<ClientConnection> get connectedClients => _connectedClients;
+  bool get isGameReady => _isGameReady;
 
   Future<void> createLobby() async {
     _serviceUuid = uuid.v4();
@@ -51,7 +45,7 @@ class HostConnectionProvider extends ChangeNotifier {
       addPlayer();
     }
 
-    _connectedClients["Host"] = ClientConnection(
+    _clientSlots["Host"] = ClientConnection(
         playerId: "shit",
         notifyCharacteristicUuid: "shit",
         writeCharacteristicUuid: "shit",
@@ -62,11 +56,13 @@ class HostConnectionProvider extends ChangeNotifier {
 
     await generateService();
     await startAdvertising();
+    _isGameReady = true;
+    notifyListeners();
   }
 
   Future<void> leaveLobby() async {
     await stopAdvertising();
-    _connectedClients.clear();
+    _clientSlots.clear();
   }
 
   Future<void> startAdvertising() async {
@@ -162,7 +158,7 @@ class HostConnectionProvider extends ChangeNotifier {
       descriptors: [],
     ));
 
-    _connectedClients[playerId] = ClientConnection(
+    _clientSlots[playerId] = ClientConnection(
         playerId: playerId,
         notifyCharacteristicUuid: notifyCharacteristicUuid,
         writeCharacteristicUuid: writeCharacteristicUuid,
@@ -180,7 +176,7 @@ class HostConnectionProvider extends ChangeNotifier {
     try {
       debugPrint("Subscribing to player registrations");
       for (var client
-          in _connectedClients.values.where((client) => !client.isConnected)) {
+          in _clientSlots.values.where((client) => !client.isConnected)) {
         var subscription = _peripheralManager.characteristicWriteRequested
             .listen((eventArgs) async {
           if (eventArgs.characteristic.uuid ==
@@ -196,6 +192,7 @@ class HostConnectionProvider extends ChangeNotifier {
             notifyListeners();
             debugPrint(
                 "Player Registration received for: ${request.parameters?.playerName}");
+            updateLobbyInClients();
           }
         });
         _clientStreamSubscriptions[client] = subscription;
@@ -212,13 +209,13 @@ class HostConnectionProvider extends ChangeNotifier {
      */
   }
 
-  void sendMessage(String playerId, String message) {
+  void sendMessage(String playerId, DuoMessage message) {
     try {
-      final connectedClient = _connectedClients.values
-          .firstWhere((client) => client.playerId == playerId);
+      final clientInformation =
+          _connectedClients.firstWhere((client) => client.playerId == playerId);
 
-      final characteristicUuid = connectedClient.notifyCharacteristicUuid;
-      final centralUuid = connectedClient.centralUuid;
+      final characteristicUuid = clientInformation.notifyCharacteristicUuid;
+      final centralUuid = clientInformation.centralUuid;
 
       _peripheralManager.notifyCharacteristic(
           Central(uuid: UUID.fromString(centralUuid!)),
@@ -227,10 +224,35 @@ class HostConnectionProvider extends ChangeNotifier {
               descriptors: [],
               properties: [GATTCharacteristicProperty.notify],
               permissions: [GATTCharacteristicPermission.read]),
-          value: utf8.encode(message));
+          value: utf8.encode(message.toJson().toString()));
     } catch (error) {
       debugPrint("Error when looking for playerId: $playerId: $error");
     }
+  }
+
+  Future<void> updateLobbyInClients() async {
+    _clientSlots.forEach((String playerId, ClientConnection clientConnection) {
+      if (clientConnection.isConnected) {
+        _connectedClients.add(clientConnection);
+      }
+    });
+
+    var message = DuoMessage(
+        type: "connection",
+        action: "update_lobby",
+        parameters: Parameters(
+            lobbyList: _connectedClients
+                .map((element) => element.playerName)
+                .whereType<String>()
+                .toList()));
+
+    _connectedClients.forEach((clientConnection) {
+      debugPrint(clientConnection.playerName);
+      sendMessage(
+        "playerId",
+        message,
+      );
+    });
   }
 }
 

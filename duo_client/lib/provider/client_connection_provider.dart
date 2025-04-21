@@ -90,6 +90,9 @@ class ClientConnectionProvider extends ChangeNotifier {
       await registerPlayer(_playerName, peripheral, hostConnection);
 
       // 4. Listen for disconnections
+
+      await subscribeToNotifyCharacteristicWithLogging(
+          peripheral, hostConnection.notifyCharacteristicUuid);
     } catch (e) {
       debugPrint("Error handling connection: $e");
       return;
@@ -248,6 +251,47 @@ class ClientConnectionProvider extends ChangeNotifier {
   Future<bool> setPlayerName(String playerName) async {
     _playerName = playerName;
     return true;
+  }
+
+  Future<void> subscribeToNotifyCharacteristicWithLogging(
+      Peripheral peripheral, String notifyCharacteristicUuid) async {
+    try {
+      // Discover GATT services of the peripheral
+      var discoveredGatt = await _centralManager.discoverGATT(peripheral);
+
+      // Find the service containing the notify characteristic
+      var service = discoveredGatt.firstWhere((service) =>
+          service.characteristics.any((characteristic) =>
+              characteristic.uuid ==
+              UUID.fromString(notifyCharacteristicUuid)));
+
+      // Find the notify characteristic within the service
+      var notifyCharacteristic = service.characteristics.firstWhere(
+          (characteristic) =>
+              characteristic.uuid == UUID.fromString(notifyCharacteristicUuid));
+
+      // Enable notifications for the characteristic
+      await _centralManager.setCharacteristicNotifyState(
+        peripheral,
+        notifyCharacteristic,
+        state: true, // Enable notifications
+      );
+
+      debugPrint(
+          "Subscribed to notifications for characteristic: $notifyCharacteristicUuid");
+
+      // Listen to notifications
+      _centralManager.characteristicNotified.listen((event) {
+        if (event.characteristic.uuid == notifyCharacteristic.uuid) {
+          // Decode and print the received data
+          final receivedData = utf8.decode(event.value);
+          debugPrint(
+              "Received data from $notifyCharacteristicUuid: $receivedData");
+        }
+      });
+    } catch (e) {
+      debugPrint("Error subscribing to notify characteristic: $e");
+    }
   }
 
 // TODO: Add reconnect mechanism to reconnect when connectionState == true. Max timeout 5 minutes

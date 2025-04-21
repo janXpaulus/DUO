@@ -35,7 +35,7 @@ class InviteDialog extends ConsumerWidget {
     // });
     bool watchIsConnected = ref
         .watch(hostConnectionProvider)
-        .connectedClients
+        .clientSlots
         .entries
         .firstWhere((entry) => entry.value.playerId == hostConnection.playerId)
         .value

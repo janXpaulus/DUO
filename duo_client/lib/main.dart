@@ -72,47 +72,47 @@ class _DuoAppState extends ConsumerState<DuoApp> {
         ),
         textTheme: GoogleFonts.aDLaMDisplayTextTheme(),
       ),
-      initialRoute: SplashScreen.route,
+      initialRoute: HomeScreen.route,
       routes: {
-        SplashScreen.route: (context) => SplashScreen(
-              onLoading: () async {
-                await ref.read(storageProvider).init();
+        //   SplashScreen.route: (context) => SplashScreen(
+        //         onLoading: () async {
+        //           await ref.read(storageProvider).init();
 
-                debugPrint(
-                    'trying to connect to ${ref.read(storageProvider).grpcHost}');
+        //           debugPrint(
+        //               'trying to connect to ${ref.read(storageProvider).grpcHost}');
 
-                getIt.registerSingleton(GrpcServerConnection(
-                  host: ref.read(storageProvider).grpcHost,
-                ));
-                // you can register other apis here (e.g. bluetooth)
+        //           getIt.registerSingleton(GrpcServerConnection(
+        //             host: ref.read(storageProvider).grpcHost,
+        //           ));
+        //           // you can register other apis here (e.g. bluetooth)
 
-                if (getIt.isRegistered<GrpcServerConnection>()) {
-                  debugPrint('GrpcServerConnection is registered');
-                } else {
-                  debugPrint('GrpcServerConnection is not registered');
-                }
+        //           if (getIt.isRegistered<GrpcServerConnection>()) {
+        //             debugPrint('GrpcServerConnection is registered');
+        //           } else {
+        //             debugPrint('GrpcServerConnection is not registered');
+        //           }
 
-                await ref.read(apiProvider).initUserStatusStream();
-                ref.read(apiProvider).sendUserstatusUpdate(
-                    await ref.read(apiProvider).getToken(), FriendState.online);
+        //           await ref.read(apiProvider).initUserStatusStream();
+        //           ref.read(apiProvider).sendUserstatusUpdate(
+        //               await ref.read(apiProvider).getToken(), FriendState.online);
 
-                return await ref.read(apiProvider).loginUser(
-                    ref.read(storageProvider).userId,
-                    ref.read(storageProvider).privateKey);
-              },
-              onLoadingComplete: (dynamic status) {
-                if (status == 0) {
-                  Navigator.of(context).pushReplacementNamed(HomeScreen.route);
-                } else {
-                  debugPrint('User not found');
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (context) => const GetUserDialog(),
-                  );
-                }
-              },
-            ),
+        //           return await ref.read(apiProvider).loginUser(
+        //               ref.read(storageProvider).userId,
+        //               ref.read(storageProvider).privateKey);
+        //         },
+        //         onLoadingComplete: (dynamic status) {
+        //           if (status == 0) {
+        //             Navigator.of(context).pushReplacementNamed(HomeScreen.route);
+        //           } else {
+        //             debugPrint('User not found');
+        //             showDialog(
+        //               context: context,
+        //               barrierDismissible: false,
+        //               builder: (context) => const GetUserDialog(),
+        //             );
+        //           }
+        //         },
+        //       ),
         QrCodeScanner.route: (context) => const QrCodeScanner(),
         HomeScreen.route: (context) => const HomeScreen(),
         GameScreen.route: (context) => const GameScreen(),

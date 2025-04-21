@@ -50,6 +50,7 @@ class Parameters {
   String? playerName;
   String? sessionName;
   String? recipientDeviceUuid;
+  List<String>? lobbyList;
 
   String? card;
   List<String>? cards;
@@ -59,6 +60,7 @@ class Parameters {
     this.playerName,
     this.sessionName,
     this.recipientDeviceUuid,
+    this.lobbyList,
     this.card,
     this.cards,
   });
@@ -69,6 +71,7 @@ class Parameters {
       playerName: json['playerName'],
       sessionName: json['sessionName'],
       recipientDeviceUuid: json['recipientDeviceUuid'],
+      lobbyList: json['lobbyList'],
       card: json['card'],
       cards: (json['cards'] as List<dynamic>?)?.cast<String>(),
     );
@@ -80,6 +83,7 @@ class Parameters {
       'playerName': playerName,
       'sessionName': sessionName,
       'recipientDeviceUuid': recipientDeviceUuid,
+      'lobbyList': lobbyList,
       'card': card,
       'cards': cards,
     };

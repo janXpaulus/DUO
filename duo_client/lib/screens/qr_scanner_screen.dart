@@ -10,6 +10,7 @@ import 'package:qr_scanner_overlay/qr_scanner_overlay.dart';
 import '../provider/client_connection_provider.dart';
 import '../utils/models/client_connection_model.dart';
 import '../utils/models/host_connection_model.dart';
+import 'lobby_screen.dart';
 
 class QrCodeScanner extends ConsumerStatefulWidget {
   static const route = '/qr-code-scanner';
@@ -152,6 +153,7 @@ class _QrCodeScannerState extends ConsumerState<QrCodeScanner>
         if (!mounted) return;
         Navigator.of(context).pop();
         ref.read(clientConnectionProvider).handleConnection(hostConnection);
+        Navigator.of(context).pushReplacementNamed(LobbyScreen.route);
       } else {
         if (borderColor == Colors.white) await setInvalidColor();
       }

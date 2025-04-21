@@ -35,10 +35,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       DeviceOrientation.portraitDown,
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      ref.read(apiProvider).sendUserstatusUpdate(
-          await ref.read(apiProvider).getToken(), FriendState.online);
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   /ref.read(apiProvider).sendUserstatusUpdate(
+    //       await ref.read(apiProvider).getToken(), FriendState.online);
+    // });
     super.initState();
   }
 
@@ -111,10 +111,8 @@ class EmptySegmentText extends StatelessWidget {
           Text(
             text,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withOpacity(0.54),
+                  color:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.54),
                 ),
           ),
         ],

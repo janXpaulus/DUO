@@ -2,6 +2,7 @@ import 'package:animated_background/animated_background.dart';
 import 'package:duo_client/pb/friend.pb.dart';
 import 'package:duo_client/pb/user.pb.dart';
 import 'package:duo_client/provider/api_provider.dart';
+import 'package:duo_client/provider/client_connection_provider.dart';
 import 'package:duo_client/provider/host_connection_provider.dart';
 import 'package:duo_client/provider/storage_provider.dart';
 import 'package:duo_client/screens/game_screen.dart';
@@ -30,14 +31,16 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
     with TickerProviderStateMixin {
   bool joiningGame = false;
 
+  // TODO: load lobby data from client_connection_provider
+
   @override
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      ref.read(apiProvider).sendUserstatusUpdate(
-          await ref.read(apiProvider).getToken(), FriendState.inLobby);
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   ref.read(apiProvider).sendUserstatusUpdate(
+    //       await ref.read(apiProvider).getToken(), FriendState.inLobby);
+    // });
     ref.read(hostConnectionProvider).subscribeToPlayerRegistrations();
   }
 
@@ -58,8 +61,10 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
     //   }
     // });
 
-    bool gameReady = ref.watch(apiProvider).gameId > 0 &&
-        ref.watch(apiProvider).lobbyStatus == null;
+    // bool gameReady = ref.watch(apiProvider).gameId > 0 &&
+    //     ref.watch(apiProvider).lobbyStatus == null;
+
+    bool gameReady = ref.watch(hostConnectionProvider).isGameReady;
 
     final watchHostConnectionProvider = ref.watch(hostConnectionProvider);
 
@@ -146,8 +151,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                             childAspectRatio: 1.5,
                           ),
                           children: [
-                            ...watchHostConnectionProvider
-                                .connectedClients.entries
+                            ...watchHostConnectionProvider.clientSlots.entries
                                 .map((entry) {
                               final clientConnection = entry.value;
 
@@ -238,22 +242,21 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                           backgroundColor:
                                               Constants.successColor),
                                       onPressed: () async {
-                                        if (ref.read(storageProvider).userId ==
-                                            ref
-                                                .read(apiProvider)
-                                                .lobbyStatus!
-                                                .users
-                                                .where((element) =>
-                                                    element.isAdmin)
-                                                .first
-                                                .uuid) {
+                                        if (true
+                                            // TODO: Implement logic to check if user pressing button is stack user and therefore allowed to
+                                            // ref.read(storageProvider).userId ==
+                                            //   ref
+                                            //       .read(hostConnectionProvider)
+                                            //       .connectedClients
+                                            //       .first
+                                            //       .playerId
+                                            ) {
                                           // TODO: change back to 3 players for a game but for testing purposes 2
                                           if (ref
-                                                  .read(apiProvider)
-                                                  .lobbyStatus!
-                                                  .users
-                                                  .length <
-                                              0) {
+                                                  .read(hostConnectionProvider)
+                                                  .connectedClients
+                                                  .length >
+                                              1) {
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
                                               const SnackBar(
@@ -263,12 +266,6 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                             );
                                             return;
                                           }
-                                          String token = await ref
-                                              .read(apiProvider)
-                                              .getToken();
-                                          ref
-                                              .read(apiProvider)
-                                              .startGame(token);
                                           //TODO: Start game logic for BLE
                                           joiningGame = true;
                                         } else {

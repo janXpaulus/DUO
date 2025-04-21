@@ -24,9 +24,9 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      ref.read(apiProvider).getFriends(await ref.read(apiProvider).getToken());
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   ref.read(apiProvider).getFriends(await ref.read(apiProvider).getToken());
+    // });
     super.initState();
   }
 
