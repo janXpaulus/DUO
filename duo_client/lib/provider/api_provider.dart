@@ -58,8 +58,7 @@ class ApiProvider extends ChangeNotifier implements AbstractServerConnection {
             final registerUserEvent = event as RegisterUserEvent;
             _storageProvider.setUserId(registerUserEvent.uuid);
             _storageProvider.setUsername(registerUserEvent.username);
-            _storageProvider.setAccessToken(registerUserEvent.accessToken);
-            _storageProvider.setPrivateKey(registerUserEvent.privatePEMKey);
+
             notifyListeners();
             break;
           }
@@ -67,8 +66,6 @@ class ApiProvider extends ChangeNotifier implements AbstractServerConnection {
           {
             //Login was successful, save the token
             final loginUserEvent = event as LoginUserEvent;
-            _storageProvider.setAccessToken(loginUserEvent.token);
-            _storageProvider.setExpireDate(loginUserEvent.expirationDate);
             notifyListeners();
             break;
           }
@@ -167,17 +164,6 @@ class ApiProvider extends ChangeNotifier implements AbstractServerConnection {
   void dispose() async {
     await _eventStreamSubscription?.cancel();
     super.dispose();
-  }
-
-  Future<String> getToken() async {
-    if (_storageProvider.expireDate
-            ?.isBefore(DateTime.now().subtract(const Duration(minutes: 2))) ??
-        false) {
-      await _serverConnection.loginUser(
-          _storageProvider.userId, _storageProvider.privateKey);
-      return _storageProvider.accessToken;
-    }
-    return _storageProvider.accessToken;
   }
 
   @override

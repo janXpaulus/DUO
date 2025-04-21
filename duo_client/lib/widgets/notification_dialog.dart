@@ -22,14 +22,14 @@ class _NotificationDialogState extends ConsumerState<NotificationDialog> {
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       setState(() => _isLoading = true);
-      final reqs = await ref
-          .read(apiProvider)
-          .getFriendRequests(await ref.read(apiProvider).getToken());
+      // final reqs = await ref
+      //     .read(apiProvider)
+      //     .getFriendRequests(await ref.read(apiProvider).getToken());
 
-      setState(() {
-        _isLoading = false;
-        _friendRequests = reqs;
-      });
+      // setState(() {
+      //   _isLoading = false;
+      //   _friendRequests = reqs;
+      // });
     });
     super.initState();
   }

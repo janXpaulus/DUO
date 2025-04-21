@@ -41,10 +41,10 @@ class _GameStacksState extends ConsumerState<GameStacks> {
               randomAngles: false,
               onTap: (PlayingCard card) async {
                 debugPrint('requesting Card for player');
-                String token = await ref.read(apiProvider).getToken();
-                ref
-                    .watch(apiProvider)
-                    .requestCard(token, ref.read(apiProvider).gameId);
+                // String token = await ref.read(apiProvider).getToken();
+                // ref
+                //     .watch(apiProvider)
+                //     .requestCard(token, ref.read(apiProvider).gameId);
               },
             ),
           ),

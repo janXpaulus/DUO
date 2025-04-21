@@ -53,21 +53,22 @@ class _PauseDialogState extends ConsumerState<PauseDialog> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    String token = await ref.read(apiProvider).getToken();
-                    ref
-                        .read(apiProvider)
-                        .sendUserstatusUpdate(token, FriendState.online);
+                    // TODO: Add logic to resume game with BLE
+                    // String token = await ref.read(apiProvider).getToken();
+                    // ref
+                    //     .read(apiProvider)
+                    //     .sendUserstatusUpdate(token, FriendState.online);
 
-                    SystemChrome.setEnabledSystemUIMode(
-                        SystemUiMode.edgeToEdge);
-                    SystemChrome.setPreferredOrientations([
-                      DeviceOrientation.portraitUp,
-                      DeviceOrientation.portraitDown,
-                    ]);
-                    widget.onExit();
-                    if (!context.mounted) return;
-                    Navigator.of(context)
-                        .pushReplacementNamed(HomeScreen.route);
+                    // SystemChrome.setEnabledSystemUIMode(
+                    //     SystemUiMode.edgeToEdge);
+                    // SystemChrome.setPreferredOrientations([
+                    //   DeviceOrientation.portraitUp,
+                    //   DeviceOrientation.portraitDown,
+                    // ]);
+                    // widget.onExit();
+                    // if (!context.mounted) return;
+                    // Navigator.of(context)
+                    //     .pushReplacementNamed(HomeScreen.route);
                   },
                   child:
                       const Text('Exit', style: TextStyle(color: Colors.white)),

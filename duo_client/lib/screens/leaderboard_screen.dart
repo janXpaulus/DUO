@@ -19,7 +19,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   Widget build(BuildContext context) {
     StorageProvider _storageProvider = ref.read(storageProvider);
     var self_user = Friend(
-        name: _storageProvider.username, score: 100, state: FriendState.online);
+        name: _storageProvider.playerName,
+        score: 100,
+        state: FriendState.online);
 
     return Scaffold(
       appBar: AppBar(

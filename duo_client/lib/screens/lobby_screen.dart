@@ -217,6 +217,7 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                             .leaveLobby();
                                         if (!watchHostConnectionProvider
                                             .isAdvertising) {
+                                          // TODO: Add method to disconnect from BLE lobby
                                           print(
                                               'Disconnected sucessfully from lobby');
                                           Navigator.of(context)

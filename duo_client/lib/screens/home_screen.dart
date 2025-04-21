@@ -23,9 +23,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _currentIndex = 0;
   final List<Widget> _screens = [
     const DashboardScreen(),
-    const LeaderboardScreen(),
-    const ProfileScreen(),
-    const DashboardScreen(),
+    // const LeaderboardScreen(),
+    // const ProfileScreen(),
+    // const DashboardScreen(),
   ];
 
   @override

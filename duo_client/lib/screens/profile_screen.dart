@@ -15,7 +15,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
-    String username = ref.watch(storageProvider).username;
+    String username = ref.watch(storageProvider).playerName;
 
     return Scaffold(
       appBar: AppBar(

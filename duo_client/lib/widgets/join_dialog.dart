@@ -62,12 +62,6 @@ class _JoinDialogState extends ConsumerState<JoinDialog> {
                         //Just here pushNamed and not pushReplacementNamed
                         dynamic id = await Navigator.of(context)
                             .pushNamed(QrCodeScanner.route);
-                        if (id != null) {
-                          _controller.text =
-                              Helpers.fillPrefixWithZerosForString(
-                                  id.toString());
-                          joinGame();
-                        }
                       },
                       icon: const Icon(
                         Icons.qr_code_scanner_rounded,
@@ -84,33 +78,5 @@ class _JoinDialogState extends ConsumerState<JoinDialog> {
             ),
           ),
         ));
-  }
-
-  void joinGame() {
-    if (_controller.text.isEmpty) {
-      setState(() {
-        wrongInviteCode = true;
-        hintText = 'Invite code needs to be 6 digits long';
-      });
-      return;
-    }
-    if (_controller.text.length < 6) {
-      _controller.text = Helpers.fillPrefixWithZerosForString(_controller.text);
-    }
-    ref
-        .read(apiProvider)
-        .joinLobby(
-            ref.read(storageProvider).accessToken, int.parse(_controller.text))
-        .then((value) {
-      //TODO: await lobby stream and then connect
-      Future.delayed(const Duration(milliseconds: 300), () {
-        Navigator.of(context).pushReplacementNamed(LobbyScreen.route);
-      });
-    }).catchError((error) {
-      setState(() {
-        wrongInviteCode = true;
-        hintText = 'Invite code is invalid';
-      });
-    });
   }
 }

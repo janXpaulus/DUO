@@ -56,8 +56,6 @@ class HostConnectionProvider extends ChangeNotifier {
 
     await generateService();
     await startAdvertising();
-    _isGameReady = true;
-    notifyListeners();
   }
 
   Future<void> leaveLobby() async {

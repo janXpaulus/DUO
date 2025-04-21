@@ -28,31 +28,32 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       DeviceOrientation.landscapeRight,
     ]);
     Future.delayed(Duration.zero, () async {
-      String token = await ref.read(apiProvider).getToken();
-      debugPrint('Getting game state stream');
-      ref.read(apiProvider).sendUserstatusUpdate(token, FriendState.inGame);
-      if (ref.read(apiProvider).isStackOwner) {
-        debugPrint('Getting stack stream');
-        await ref
-            .read(apiProvider)
-            .getStackStream(token, ref.read(apiProvider).gameId);
-        debugPrint('Requesting card for player');
-        ref.read(apiProvider).stackInit(token, ref.read(apiProvider).gameId);
-      } else {
-        debugPrint('Getting player stream');
-        ref
-            .read(apiProvider)
-            .getGameStateStream(token, ref.read(apiProvider).gameId);
-        await ref
-            .read(apiProvider)
-            .getPlayerStream(token, ref.read(apiProvider).gameId);
-        debugPrint('Sending player init action');
-        ref.read(apiProvider).streamPlayerAction(PlayerAction(
-              action: PlayerAction_ActionType.INIT,
-              cardId: '',
-              token: token,
-            ));
-      }
+      // TODO: Implement methods for starting game
+      // String token = await ref.read(apiProvider).getToken();
+      // debugPrint('Getting game state stream');
+      // ref.read(apiProvider).sendUserstatusUpdate(token, FriendState.inGame);
+      // if (ref.read(apiProvider).isStackOwner) {
+      //   debugPrint('Getting stack stream');
+      //   await ref
+      //       .read(apiProvider)
+      //       .getStackStream(token, ref.read(apiProvider).gameId);
+      //   debugPrint('Requesting card for player');
+      //   ref.read(apiProvider).stackInit(token, ref.read(apiProvider).gameId);
+      // } else {
+      //   debugPrint('Getting player stream');
+      //   ref
+      //       .read(apiProvider)
+      //       .getGameStateStream(token, ref.read(apiProvider).gameId);
+      //   await ref
+      //       .read(apiProvider)
+      //       .getPlayerStream(token, ref.read(apiProvider).gameId);
+      //   debugPrint('Sending player init action');
+      //   ref.read(apiProvider).streamPlayerAction(PlayerAction(
+      //         action: PlayerAction_ActionType.INIT,
+      //         cardId: '',
+      //         token: token,
+      //       ));
+      // }
     });
     super.initState();
   }

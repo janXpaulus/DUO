@@ -15,7 +15,7 @@ class AddFriendDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     String qrText =
-        'Scan this QR code to send a FriendRequest to: ${ref.read(storageProvider).username}';
+        'Scan this QR code to send a FriendRequest to: ${ref.read(storageProvider).playerName}';
     return Dialog(
       backgroundColor: Constants.secondaryColorDark,
       insetPadding: const EdgeInsets.all(20),
@@ -80,10 +80,10 @@ class AddFriendDialog extends ConsumerWidget {
                             .pushNamed(QrCodeScanner.route) as String?;
                         if (friendId != null) {
                           print('Friend id: $friendId');
-                          await ref.read(apiProvider).sendFriendRequest(
-                              await ref.read(apiProvider).getToken(),
-                              ref.read(storageProvider).username,
-                              friendId);
+                          // await ref.read(apiProvider).sendFriendRequest(
+                          //     await ref.read(apiProvider).getToken(),
+                          //     ref.read(storageProvider).username,
+                          //     friendId);
                         }
                       },
                       icon: const Icon(
@@ -122,10 +122,10 @@ class AddFriendDialog extends ConsumerWidget {
                   ),
                   style: const TextStyle(color: Colors.white),
                   onSubmitted: (value) async {
-                    ref.read(apiProvider).sendFriendRequest(
-                        await ref.read(apiProvider).getToken(),
-                        ref.read(storageProvider).username,
-                        value);
+                    // ref.read(apiProvider).sendFriendRequest(
+                    //     await ref.read(apiProvider).getToken(),
+                    //     ref.read(storageProvider).username,
+                    //     value);
                   },
                 ),
               ),
@@ -142,15 +142,15 @@ class AddFriendDialog extends ConsumerWidget {
                   ),
                   ElevatedButton(
                       onPressed: () async {
-                        ref
-                            .read(apiProvider)
-                            .sendFriendRequest(
-                                await ref.read(apiProvider).getToken(),
-                                ref.read(storageProvider).username,
-                                _controller.text)
-                            .then((value) {
-                          Navigator.of(context).pop();
-                        });
+                        // ref
+                        //     .read(apiProvider)
+                        //     .sendFriendRequest(
+                        //         await ref.read(apiProvider).getToken(),
+                        //         ref.read(storageProvider).username,
+                        //         _controller.text)
+                        //     .then((value) {
+                        //   Navigator.of(context).pop();
+                        // });
                       },
                       child: const Text('Add',
                           style: TextStyle(color: Colors.white)))

@@ -108,9 +108,9 @@ class FriendListTile extends ConsumerWidget {
                                   Colors.white54, BlendMode.srcIn),
                             ),
                             onPressed: () async {
-                              ref.read(apiProvider).deleteFriend(
-                                  await ref.read(apiProvider).getToken(),
-                                  friend.uuid);
+                              //   ref.read(apiProvider).deleteFriend(
+                              //       await ref.read(apiProvider).getToken(),
+                              //       friend.uuid);
                             },
                           ),
                         ],

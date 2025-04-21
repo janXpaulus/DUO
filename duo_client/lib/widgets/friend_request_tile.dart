@@ -29,12 +29,12 @@ class FriendRequestTile extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.check, color: Colors.white),
             onPressed: () async {
-              onDeleted();
-              await ref.read(apiProvider).answerFriendRequest(
-                    await ref.read(apiProvider).getToken(),
-                    friendRequest.requesterUuid,
-                    true,
-                  );
+              // onDeleted();
+              // await ref.read(apiProvider).answerFriendRequest(
+              //       await ref.read(apiProvider).getToken(),
+              //       friendRequest.requesterUuid,
+              //       true,
+              //     );
               // ref
               //     .read(apiProvider)
               //     .getFriends(await ref.read(apiProvider).getToken());
@@ -45,11 +45,11 @@ class FriendRequestTile extends ConsumerWidget {
             icon: const Icon(Icons.close, color: Colors.white),
             onPressed: () async {
               onDeleted();
-              await ref.read(apiProvider).answerFriendRequest(
-                    await ref.read(apiProvider).getToken(),
-                    friendRequest.requesterUuid,
-                    false,
-                  );
+              // await ref.read(apiProvider).answerFriendRequest(
+              //       await ref.read(apiProvider).getToken(),
+              //       friendRequest.requesterUuid,
+              //       false,
+              //     );
             },
           ),
         ],
