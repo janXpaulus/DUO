@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:duo_client/provider/connection_provider.dart';
 import 'package:duo_client/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -152,7 +153,7 @@ class _QrCodeScannerState extends ConsumerState<QrCodeScanner>
         await setValidColor();
         if (!mounted) return;
         Navigator.of(context).pop();
-        ref.read(clientConnectionProvider).handleConnection(hostConnection);
+        ref.read(connectionProvider).joinGame(hostConnection);
         Navigator.of(context).pushReplacementNamed(LobbyScreen.route);
       } else {
         if (borderColor == Colors.white) await setInvalidColor();

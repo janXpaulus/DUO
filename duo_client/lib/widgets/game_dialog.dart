@@ -1,5 +1,6 @@
 import 'package:duo_client/provider/api_provider.dart';
 import 'package:duo_client/provider/client_connection_provider.dart';
+import 'package:duo_client/provider/connection_provider.dart';
 import 'package:duo_client/provider/host_connection_provider.dart';
 import 'package:duo_client/provider/storage_provider.dart';
 import 'package:duo_client/screens/lobby_screen.dart';
@@ -48,11 +49,8 @@ class _GameDialogState extends ConsumerState<GameDialog> {
                   DuoSelectTile(
                     title: 'Host Game',
                     onPressed: () async {
-                      // ref.read(apiProvider).createLobby(
-                      //     ref.read(storageProvider).accessToken,
-                      //     Constants.maxPlayers);
-                      await ref.read(hostConnectionProvider).createLobby();
-                      if (ref.watch(hostConnectionProvider).isAdvertising) {
+                      await ref.read(connectionProvider).hostGame(ref);
+                      if (ref.watch(connectionProvider).isInLobby) {
                         Navigator.of(context)
                             .pushReplacementNamed(LobbyScreen.route);
                       }
@@ -65,18 +63,6 @@ class _GameDialogState extends ConsumerState<GameDialog> {
                         ? 'Join Game'
                         : 'Leave Game',
                     onPressed: () async {
-                      // if (!ref.read(clientConnectionProvider).isDiscovering) {
-                      //   ref.read(clientConnectionProvider).initializeBle();
-                      //   await ref
-                      //       .read(clientConnectionProvider)
-                      //       .startDiscovery(serviceUUIDs: []);
-                      // } else {
-                      //   await ref
-                      //       .read(clientConnectionProvider)
-                      //       .stopDiscovery();
-                      // }
-                      //ref.read(await ClientConnectionProvider().onStartScan());
-
                       showDialog(
                           context: context,
                           builder: (context) => const JoinDialog());

@@ -3,6 +3,7 @@ import 'package:duo_client/pb/friend.pb.dart';
 import 'package:duo_client/pb/user.pb.dart';
 import 'package:duo_client/provider/api_provider.dart';
 import 'package:duo_client/provider/client_connection_provider.dart';
+import 'package:duo_client/provider/connection_provider.dart';
 import 'package:duo_client/provider/host_connection_provider.dart';
 import 'package:duo_client/provider/storage_provider.dart';
 import 'package:duo_client/screens/game_screen.dart';
@@ -152,27 +153,17 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                             childAspectRatio: 1.5,
                           ),
                           children: [
-                            ...watchHostConnectionProvider.clientSlots.entries
-                                .map((entry) {
-                              final clientConnection = entry.value;
-
-                              final hostConnection = HostConnection(
-                                  playerId: clientConnection.playerId,
-                                  serviceUuid:
-                                      watchHostConnectionProvider.serviceUuid,
-                                  notifyCharacteristicUuid:
-                                      clientConnection.notifyCharacteristicUuid,
-                                  writeCharacteristicUuid:
-                                      clientConnection.writeCharacteristicUuid,
-                                  isConnected: false);
-                              if (clientConnection.isConnected) {
+                            ...ref
+                                .watch(connectionProvider)
+                                .lobbySlots
+                                .map((slot) {
+                              if (slot.isConnected) {
                                 return Padding(
                                   padding: const EdgeInsets.all(
                                       Constants.defaultPadding / 2),
                                   child: UserTile(
-                                    user:
-                                        User(name: clientConnection.playerName),
-                                    isStack: clientConnection.isStack,
+                                    user: User(name: slot.playerName),
+                                    isStack: slot.isStack,
                                   ),
                                 );
                               } else {
@@ -181,11 +172,20 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                       Constants.defaultPadding / 2),
                                   child: AddTile(
                                     Dialog: InviteDialog(
-                                        hostConnection: hostConnection),
+                                        hostConnection: HostConnection(
+                                            playerId: slot.playerId,
+                                            serviceUuid:
+                                                watchHostConnectionProvider
+                                                    .serviceUuid,
+                                            notifyCharacteristicUuid:
+                                                slot.notifyCharacteristicUuid,
+                                            writeCharacteristicUuid:
+                                                slot.writeCharacteristicUuid,
+                                            isConnected: false)),
                                   ),
                                 );
                               }
-                            }),
+                            })
                           ]),
                     ),
                     gameReady
@@ -214,10 +214,12 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                           backgroundColor:
                                               Constants.errorColor),
                                       onPressed: () async {
-                                        await watchHostConnectionProvider
-                                            .leaveLobby();
-                                        if (!watchHostConnectionProvider
-                                            .isAdvertising) {
+                                        await ref
+                                            .watch(connectionProvider)
+                                            .leaveLobby(ref);
+                                        if (!ref
+                                            .watch(connectionProvider)
+                                            .isInLobby) {
                                           // TODO: Add method to disconnect from BLE lobby
                                           print(
                                               'Disconnected sucessfully from lobby');
@@ -244,15 +246,11 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                           backgroundColor:
                                               Constants.successColor),
                                       onPressed: () async {
-                                        if (true
+                                        if (
                                             // TODO: Implement logic to check if user pressing button is stack user and therefore allowed to
-                                            // ref.read(storageProvider).userId ==
-                                            //   ref
-                                            //       .read(hostConnectionProvider)
-                                            //       .connectedClients
-                                            //       .first
-                                            //       .playerId
-                                            ) {
+                                            ref
+                                                .read(connectionProvider)
+                                                .isHostConnection) {
                                           // TODO: change back to 3 players for a game but for testing purposes 2
                                           if (ref
                                                   .read(hostConnectionProvider)

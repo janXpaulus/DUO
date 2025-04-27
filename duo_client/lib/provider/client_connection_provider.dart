@@ -36,6 +36,9 @@ class ClientConnectionProvider extends ChangeNotifier {
   bool _isPlayerRegistered = false;
 
   String _playerName = "Spieler 1";
+  late List<GATTService> _discoveredGatt;
+  late GATTCharacteristic _notifyCharacteristic;
+  late GATTCharacteristic _writeCharacteristic;
 
   final _maxRetries = 3;
 
@@ -86,6 +89,9 @@ class ClientConnectionProvider extends ChangeNotifier {
         return;
       }
 
+      // 3. Discover characteristics
+      await discoverCharacteristics(peripheral);
+
       // 3. Register player
       await registerPlayer(_playerName, peripheral, hostConnection);
 
@@ -93,6 +99,8 @@ class ClientConnectionProvider extends ChangeNotifier {
 
       await subscribeToNotifyCharacteristicWithLogging(
           peripheral, hostConnection.notifyCharacteristicUuid);
+
+      await subscribeToStuff(peripheral);
     } catch (e) {
       debugPrint("Error handling connection: $e");
       return;
@@ -227,15 +235,14 @@ class ClientConnectionProvider extends ChangeNotifier {
       permissions: [GATTCharacteristicPermission.write],
       descriptors: [],
     );
-    var discoveredGatt = await _centralManager.discoverGATT(peripheral);
-    debugPrint("${discoveredGatt.last.characteristics.last.uuid.value}");
+    debugPrint("${_discoveredGatt.last.characteristics.last.uuid.value}");
     var value = {
       "type": "connection",
       "action": "register",
       "parameters": {"playerName": playerName}
     };
 
-    var characteristic2 = discoveredGatt
+    var characteristic2 = _discoveredGatt
         .firstWhere((service) =>
             service.uuid == UUID.fromString(_connectionInformation.serviceUuid))
         .characteristics
@@ -294,8 +301,53 @@ class ClientConnectionProvider extends ChangeNotifier {
     }
   }
 
-// TODO: Add reconnect mechanism to reconnect when connectionState == true. Max timeout 5 minutes
+  Future<void> subscribeToStuff(Peripheral peripheral) async {
+    final characteristic = GATTCharacteristic.mutable(
+      uuid: UUID.fromString(_connectionInformation.notifyCharacteristicUuid),
+      properties: [GATTCharacteristicProperty.notify],
+      permissions: [GATTCharacteristicPermission.read],
+      descriptors: [],
+    );
+
+    var notifyCharacteristic = _discoveredGatt
+        .firstWhere((service) =>
+            service.uuid == UUID.fromString(_connectionInformation.serviceUuid))
+        .characteristics
+        .firstWhere((characteristic) =>
+            characteristic.uuid ==
+            UUID.fromString(_connectionInformation.notifyCharacteristicUuid));
+
+    // var notification = _centralManager
+    //     .setCharacteristicNotifyState(peripheral, characteristic, state: state);
+    var subscription =
+        _centralManager.characteristicNotified.listen((notification) async {
+      debugPrint("$notification");
+    });
+  }
+
+  Future<void> discoverCharacteristics(Peripheral peripheral) async {
+    _discoveredGatt = await _centralManager.discoverGATT(peripheral);
+    _notifyCharacteristic = _discoveredGatt
+        .firstWhere((service) =>
+            service.uuid == UUID.fromString(_connectionInformation.serviceUuid))
+        .characteristics
+        .firstWhere((characteristic) =>
+            characteristic.uuid ==
+            UUID.fromString(_connectionInformation.notifyCharacteristicUuid));
+
+    _writeCharacteristic = _discoveredGatt
+        .firstWhere((service) =>
+            service.uuid == UUID.fromString(_connectionInformation.serviceUuid))
+        .characteristics
+        .firstWhere((characteristic) =>
+            characteristic.uuid ==
+            UUID.fromString(_connectionInformation.writeCharacteristicUuid));
+
+    debugPrint("${_notifyCharacteristic.uuid}, ${_writeCharacteristic.uuid}");
+  }
 }
+
+// TODO: Add reconnect mechanism to reconnect when connectionState == true. Max timeout 5 minutes
 
 final clientConnectionProvider =
     ChangeNotifierProvider<ClientConnectionProvider>(

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
+import 'package:duo_client/provider/storage_provider.dart';
 import 'package:duo_client/utils/models/client_connection_model.dart';
 import 'package:duo_client/utils/models/message_model.dart';
 import 'package:flutter/foundation.dart';
@@ -39,7 +40,6 @@ class HostConnectionProvider extends ChangeNotifier {
 
   Future<void> createLobby() async {
     _serviceUuid = uuid.v4();
-    //TODO: Generate random _serviceUuid
 
     for (var client = 0; client <= Constants.maxPlayers; client++) {
       addPlayer();
@@ -49,56 +49,58 @@ class HostConnectionProvider extends ChangeNotifier {
         playerId: "shit",
         notifyCharacteristicUuid: "shit",
         writeCharacteristicUuid: "shit",
-        playerName: "Jan",
+        playerName: StorageProvider().playerName,
         isConnected: true,
         isStack: true);
-    // TODO: Have this be dynamically populated with the app wide playerName that has been set
 
-    await generateService();
+    _service = GATTService(
+        uuid: UUID.fromString(_serviceUuid),
+        isPrimary: true,
+        includedServices: [],
+        characteristics: _advertisedCharacteristics);
+
+    debugPrint("${_clientSlots}");
+
     await startAdvertising();
   }
 
-  Future<void> leaveLobby() async {
+  Future<void> deleteLobby() async {
     await stopAdvertising();
     _clientSlots.clear();
   }
 
   Future<void> startAdvertising() async {
-    try {
-      if (!_isAdvertising) {
-        _managerStateChangedSubscription =
-            _peripheralManager.stateChanged.listen((eventArgs) async {
-          debugPrint("Peripheral manager state: $eventArgs");
-          if (eventArgs.state == BluetoothLowEnergyState.unauthorized &&
-              Platform.isAndroid) {
-            await _peripheralManager.authorize();
-          }
-        });
+    if (!_isAdvertising) {
+      _managerStateChangedSubscription =
+          _peripheralManager.stateChanged.listen((eventArgs) async {
+        debugPrint("Peripheral manager state: $eventArgs");
+        if (eventArgs.state == BluetoothLowEnergyState.unauthorized &&
+            Platform.isAndroid) {
+          await _peripheralManager.authorize();
+        }
+      });
 
-        await _peripheralManager.stopAdvertising();
-        await _peripheralManager.removeAllServices();
+      await _peripheralManager.stopAdvertising();
+      await _peripheralManager.removeAllServices();
 
-        await _peripheralManager.addService(_service);
-        await _peripheralManager.startAdvertising(Advertisement(
-          name: "DUO",
-          serviceUUIDs: [UUID.fromString(_serviceUuid)],
-          manufacturerSpecificData: Platform.isIOS || Platform.isMacOS
-              ? []
-              : [
-                  ManufacturerSpecificData(
-                    id: 0x2e19,
-                    data: Uint8List.fromList([0x01, 0x02, 0x03]),
-                  )
-                ],
-        ));
-        _isAdvertising = true;
-        debugPrint("Started advertising");
-        notifyListeners();
-      } else {
-        debugPrint("App is already advertising");
-      }
-    } catch (error) {
-      debugPrint("Error in startAdvertising(): $error}");
+      await _peripheralManager.addService(_service);
+      await _peripheralManager.startAdvertising(Advertisement(
+        name: "DUO",
+        serviceUUIDs: [UUID.fromString(_serviceUuid)],
+        manufacturerSpecificData: Platform.isIOS || Platform.isMacOS
+            ? []
+            : [
+                ManufacturerSpecificData(
+                  id: 0x2e19,
+                  data: Uint8List.fromList([0x01, 0x02, 0x03]),
+                )
+              ],
+      ));
+      _isAdvertising = true;
+      debugPrint("Started advertising");
+      notifyListeners();
+    } else {
+      debugPrint("App is already advertising");
     }
   }
 
