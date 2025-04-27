@@ -682,7 +682,9 @@ func (gm *GameManager) AddPlayerStream(gameId int, userId uuid.UUID, stream pb.D
 
 
 			if isSpecialCard(cardToPlace) { // FIXME
+				log.Printf("[Player stream] Is special Card")
 				playerOffset, game.Direction = handleSpecialCard(cardToPlace, game)
+				log.Printf("###############")
 			}
 
 
