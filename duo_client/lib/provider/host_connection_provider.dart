@@ -33,9 +33,13 @@ class HostConnectionProvider extends ChangeNotifier {
   bool _isGameReady = false;
 
   Map<String, ClientConnection> get clientSlots => _clientSlots;
+
   bool get isAdvertising => _isAdvertising;
+
   String get serviceUuid => _serviceUuid;
+
   List<ClientConnection> get connectedClients => _connectedClients;
+
   bool get isGameReady => _isGameReady;
 
   Future<void> createLobby() async {
@@ -143,7 +147,6 @@ class HostConnectionProvider extends ChangeNotifier {
     final playerId = uuid.v4();
     final notifyCharacteristicUuid = uuid.v4();
     final writeCharacteristicUuid = uuid.v4();
-    String testMessage = "SHIT is working";
 
     _advertisedCharacteristics.add(GATTCharacteristic.mutable(
         uuid: UUID.fromString(notifyCharacteristicUuid),
@@ -153,7 +156,10 @@ class HostConnectionProvider extends ChangeNotifier {
 
     _advertisedCharacteristics.add(GATTCharacteristic.mutable(
       uuid: UUID.fromString(writeCharacteristicUuid),
-      properties: [GATTCharacteristicProperty.write],
+      properties: [
+        GATTCharacteristicProperty.write,
+        GATTCharacteristicProperty.writeWithoutResponse
+      ],
       permissions: [GATTCharacteristicPermission.write],
       descriptors: [],
     ));
@@ -209,21 +215,25 @@ class HostConnectionProvider extends ChangeNotifier {
      */
   }
 
-  void sendMessage(String playerId, DuoMessage message) {
+  Future<void> sendMessage(String playerId, DuoMessage message) async {
     try {
+      debugPrint("Sending message to playerId: $playerId");
       final clientInformation =
           _connectedClients.firstWhere((client) => client.playerId == playerId);
+
+      debugPrint(
+          "Sending message to player with clientInformation: ${clientInformation.toJson().toString()}");
 
       final characteristicUuid = clientInformation.notifyCharacteristicUuid;
       final centralUuid = clientInformation.centralUuid;
 
-      _peripheralManager.notifyCharacteristic(
-          Central(uuid: UUID.fromString(centralUuid!)),
-          GATTCharacteristic.mutable(
-              uuid: UUID.fromString(characteristicUuid),
-              descriptors: [],
-              properties: [GATTCharacteristicProperty.notify],
-              permissions: [GATTCharacteristicPermission.read]),
+      final characteristic = _advertisedCharacteristics.firstWhere(
+        (c) => c.uuid == UUID.fromString(characteristicUuid),
+        orElse: () => throw Exception('Characteristic not found!'),
+      );
+
+      await _peripheralManager.notifyCharacteristic(
+          Central(uuid: UUID.fromString(centralUuid!)), characteristic,
           value: utf8.encode(message.toJson().toString()));
     } catch (error) {
       debugPrint("Error when looking for playerId: $playerId: $error");
@@ -232,7 +242,7 @@ class HostConnectionProvider extends ChangeNotifier {
 
   Future<void> updateLobbyInClients() async {
     _clientSlots.forEach((String playerId, ClientConnection clientConnection) {
-      if (clientConnection.isConnected) {
+      if (clientConnection.isConnected && !clientConnection.isStack) {
         _connectedClients.add(clientConnection);
       }
     });
@@ -246,13 +256,13 @@ class HostConnectionProvider extends ChangeNotifier {
                 .whereType<String>()
                 .toList()));
 
-    _connectedClients.forEach((clientConnection) {
+    for (var clientConnection in _connectedClients) {
       debugPrint(clientConnection.playerName);
       sendMessage(
-        "playerId",
+        clientConnection.playerId,
         message,
       );
-    });
+    }
   }
 }
 

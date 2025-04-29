@@ -21,6 +21,7 @@ class ClientConnectionProvider extends ChangeNotifier {
 
   late StreamSubscription _connectionStateChanged;
   late StreamSubscription _discoveredDevices;
+  late final StreamSubscription _characteristicNotifiedSubscription;
 
   bool _isConnected = false;
 
@@ -91,16 +92,16 @@ class ClientConnectionProvider extends ChangeNotifier {
 
       // 3. Discover characteristics
       await discoverCharacteristics(peripheral);
+      await stopDiscovery();
+      await subscribeToNotifyCharacteristicWithLogging(
+          peripheral, hostConnection.notifyCharacteristicUuid);
 
       // 3. Register player
       await registerPlayer(_playerName, peripheral, hostConnection);
 
       // 4. Listen for disconnections
 
-      await subscribeToNotifyCharacteristicWithLogging(
-          peripheral, hostConnection.notifyCharacteristicUuid);
-
-      await subscribeToStuff(peripheral);
+      // await subscribeToStuff(peripheral);
     } catch (e) {
       debugPrint("Error handling connection: $e");
       return;
@@ -229,12 +230,6 @@ class ClientConnectionProvider extends ChangeNotifier {
   Future<void> registerPlayer(String playerName, Peripheral peripheral,
       HostConnection hostConnection) async {
     debugPrint("Waiting to register player");
-    final characteristic = GATTCharacteristic.mutable(
-      uuid: UUID.fromString(_connectionInformation.writeCharacteristicUuid),
-      properties: [GATTCharacteristicProperty.write],
-      permissions: [GATTCharacteristicPermission.write],
-      descriptors: [],
-    );
     debugPrint("${_discoveredGatt.last.characteristics.last.uuid.value}");
     var value = {
       "type": "connection",
@@ -250,9 +245,14 @@ class ClientConnectionProvider extends ChangeNotifier {
             characteristic.uuid ==
             UUID.fromString(_connectionInformation.writeCharacteristicUuid));
 
-    await _centralManager.writeCharacteristic(peripheral, characteristic2,
-        value: utf8.encode(jsonEncode(value)),
-        type: GATTCharacteristicWriteType.withResponse);
+    try {
+      await _centralManager.writeCharacteristic(peripheral, characteristic2,
+          value: utf8.encode(jsonEncode(value)),
+          type: GATTCharacteristicWriteType.withoutResponse);
+      debugPrint("Wrote to characteristic successfully!");
+    } on Exception catch (e) {
+      debugPrint("Error when writing characteristic: $e");
+    }
   }
 
   Future<bool> setPlayerName(String playerName) async {
@@ -286,6 +286,15 @@ class ClientConnectionProvider extends ChangeNotifier {
 
       debugPrint(
           "Subscribed to notifications for characteristic: $notifyCharacteristicUuid");
+
+      _characteristicNotifiedSubscription =
+          _centralManager.characteristicNotified.listen((eventArgs) {
+        if (eventArgs.characteristic != _notifyCharacteristic) {
+          return;
+        }
+        debugPrint("Notified [${eventArgs.value.length}] ${eventArgs.value}");
+        notifyListeners();
+      });
 
       // Listen to notifications
       _centralManager.characteristicNotified.listen((event) {
@@ -321,7 +330,7 @@ class ClientConnectionProvider extends ChangeNotifier {
     //     .setCharacteristicNotifyState(peripheral, characteristic, state: state);
     var subscription =
         _centralManager.characteristicNotified.listen((notification) async {
-      debugPrint("$notification");
+      debugPrint("Received notification: $notification");
     });
   }
 
@@ -343,7 +352,8 @@ class ClientConnectionProvider extends ChangeNotifier {
             characteristic.uuid ==
             UUID.fromString(_connectionInformation.writeCharacteristicUuid));
 
-    debugPrint("${_notifyCharacteristic.uuid}, ${_writeCharacteristic.uuid}");
+    debugPrint(
+        "notifyCharacteristic and writeCharacteristic: ${_notifyCharacteristic.uuid}, ${_writeCharacteristic.uuid}");
   }
 }
 

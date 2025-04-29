@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:duo_client/pb/friend.pb.dart';
-import 'package:duo_client/provider/connection_provider.dart';
 import 'package:duo_client/provider/host_connection_provider.dart';
 import 'package:duo_client/utils/constants.dart';
 import 'package:flutter/material.dart';
@@ -35,9 +34,11 @@ class InviteDialog extends ConsumerWidget {
     //   ref.read(apiProvider).getFriends(token);
     // });
     bool watchIsConnected = ref
-        .watch(connectionProvider)
-        .lobbySlots
-        .firstWhere((entry) => entry.playerId == hostConnection.playerId)
+        .watch(hostConnectionProvider)
+        .clientSlots
+        .entries
+        .firstWhere((entry) => entry.value.playerId == hostConnection.playerId)
+        .value
         .isConnected;
 
     if (watchIsConnected) {

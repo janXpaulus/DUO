@@ -14,7 +14,9 @@ class ConnectionProvider extends ChangeNotifier {
   List<ClientConnection> _lobbySlots = [];
 
   bool get isHostConnection => _isHostConnection;
+
   bool get isInLobby => _isInLobby;
+
   List<ClientConnection> get lobbySlots => _lobbySlots;
 
   Future<void> hostGame(WidgetRef ref) async {
@@ -26,6 +28,7 @@ class ConnectionProvider extends ChangeNotifier {
     hostConnection.clientSlots.entries.forEach((client) {
       lobbySlots.add(client.value);
     });
+    notifyListeners();
     debugPrint("$_lobbySlots");
   }
 
