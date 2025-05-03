@@ -22,7 +22,6 @@ func CanPlaceCard(cardToPlace Card, topCardOnStack Card) bool {
 
 
 func isSpecialCard(card Card) bool {
-    log.Printf("#####################")
     log.Printf("Checking if card %v is a special card", card.CardId)
     return card.CardType == "special"
 }
@@ -35,14 +34,17 @@ func handleSpecialCard(cardToPlace Card, game *Game) (int, pb.Direction) {
 
     switch cardToPlace.CardValue {
     case "suspend":
+        // FIXME Index out of range
         log.Printf("Suspended next player")
-        playerOffset = 2 // Skip next player
+        playerOffset = 1 // Skip next player
     case "change_directions":
         log.Printf("Changing directions")
         if game.Direction == pb.Direction_CLOCKWISE {
             game.Direction = pb.Direction_COUNTER_CLOCKWISE
+            log.Printf("New game direction: %v", game.Direction)
         } else {
             game.Direction = pb.Direction_CLOCKWISE
+            log.Printf("New game direction: %v", game.Direction)
         }
     }
 

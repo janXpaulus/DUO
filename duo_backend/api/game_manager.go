@@ -680,11 +680,15 @@ func (gm *GameManager) AddPlayerStream(gameId int, userId uuid.UUID, stream pb.D
 
 			playerOffset := 1 // Normal turn
 
+			// Log current game direction
+			log.Printf("Current game direction: %v", game.Direction)
+
 
 			if isSpecialCard(cardToPlace) { // FIXME
+				log.Printf("##########START###########")
 				log.Printf("[Player stream] Is special Card")
 				playerOffset, game.Direction = handleSpecialCard(cardToPlace, game)
-				log.Printf("###############")
+				log.Printf("#######END########")
 			}
 
 
