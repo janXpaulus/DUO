@@ -34,9 +34,9 @@ func handleSpecialCard(cardToPlace Card, game *Game) (int, pb.Direction) {
 
     switch cardToPlace.CardValue {
     case "suspend":
-        // FIXME Index out of range
         log.Printf("Suspended next player")
-        playerOffset = 1 // Skip next player
+        playerOffset = 2 // Skip next player 
+        // FIXME Index out of range, if only one player
     case "change_directions":
         log.Printf("Changing directions")
         if game.Direction == pb.Direction_CLOCKWISE {
