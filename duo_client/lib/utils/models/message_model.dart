@@ -71,7 +71,7 @@ class Parameters {
       playerName: json['playerName'],
       sessionName: json['sessionName'],
       recipientDeviceUuid: json['recipientDeviceUuid'],
-      lobbyList: json['lobbyList'],
+      lobbyList: (json['lobbyList'] as List<dynamic>?)?.cast<String>(),
       card: json['card'],
       cards: (json['cards'] as List<dynamic>?)?.cast<String>(),
     );

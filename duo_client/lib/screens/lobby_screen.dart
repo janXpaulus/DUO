@@ -1,20 +1,18 @@
 import 'package:animated_background/animated_background.dart';
-import 'package:duo_client/pb/friend.pb.dart';
 import 'package:duo_client/pb/user.pb.dart';
-import 'package:duo_client/provider/api_provider.dart';
-import 'package:duo_client/provider/client_connection_provider.dart';
 import 'package:duo_client/provider/connection_provider.dart';
 import 'package:duo_client/provider/host_connection_provider.dart';
-import 'package:duo_client/provider/storage_provider.dart';
 import 'package:duo_client/screens/game_screen.dart';
 import 'package:duo_client/screens/home_screen.dart';
 import 'package:duo_client/utils/constants.dart';
+import 'package:duo_client/widgets/card_scroll_view.dart';
 import 'package:duo_client/widgets/user_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+import '../provider/client_connection_provider.dart';
 import '../utils/models/host_connection_model.dart';
 import '../widgets/add_tile.dart';
 import '../widgets/invite_dialog.dart';
@@ -31,6 +29,7 @@ class LobbyScreen extends ConsumerStatefulWidget {
 class _LobbyScreenState extends ConsumerState<LobbyScreen>
     with TickerProviderStateMixin {
   bool joiningGame = false;
+  List<String> playerList = [];
 
   // TODO: load lobby data from client_connection_provider
   // TODO: Add client mode and host mode to distinguish needed methods
@@ -43,13 +42,20 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
     //   ref.read(apiProvider).sendUserstatusUpdate(
     //       await ref.read(apiProvider).getToken(), FriendState.inLobby);
     // });
-    ref.read(hostConnectionProvider).subscribeToPlayerRegistrations();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(hostConnectionProvider).subscribeToNotifyCharacteristics();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     // ApiProvider _apiProvider = ref.watch(apiProvider);
     bool creatingLobby = false;
+    final cConnectionProvider = ref.watch(clientConnectionProvider);
+    final playerList = cConnectionProvider.playerList;
+    bool isGameReady = ref.watch(clientConnectionProvider).isGameReady;
+    debugPrint("$playerList");
     /*
         ref.watch(apiProvider).lobbyStatus == null &&
         ref.watch(apiProvider).gameId == -1;
@@ -69,6 +75,12 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
     bool gameReady = ref.watch(hostConnectionProvider).isGameReady;
 
     final watchHostConnectionProvider = ref.watch(hostConnectionProvider);
+
+    final isHostConnection = ref.watch(connectionProvider).isHostConnection;
+
+    if (isGameReady) {
+      Navigator.of(context).push(CardScrollView.route);
+    }
 
     return Scaffold(
       backgroundColor: Constants.bgColor,
@@ -153,39 +165,50 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                             childAspectRatio: 1.5,
                           ),
                           children: [
-                            ...ref
-                                .watch(connectionProvider)
-                                .lobbySlots
-                                .map((slot) {
-                              if (slot.isConnected) {
-                                return Padding(
+                            if (ref.watch(connectionProvider).isHostConnection)
+                              ...ref
+                                  .watch(connectionProvider)
+                                  .lobbySlots
+                                  .map((slot) {
+                                if (slot.isConnected) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(
+                                        Constants.defaultPadding / 2),
+                                    child: UserTile(
+                                      user: User(name: slot.playerName),
+                                      isStack: slot.isStack,
+                                    ),
+                                  );
+                                } else {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(
+                                        Constants.defaultPadding / 2),
+                                    child: AddTile(
+                                      Dialog: InviteDialog(
+                                          hostConnection: HostConnection(
+                                              playerId: slot.playerId,
+                                              serviceUuid:
+                                                  watchHostConnectionProvider
+                                                      .serviceUuid,
+                                              notifyCharacteristicUuid:
+                                                  slot.notifyCharacteristicUuid,
+                                              writeCharacteristicUuid:
+                                                  slot.writeCharacteristicUuid,
+                                              isConnected: false)),
+                                    ),
+                                  );
+                                }
+                              })
+                            else if (playerList.isNotEmpty)
+                              for (var player in playerList)
+                                Padding(
                                   padding: const EdgeInsets.all(
                                       Constants.defaultPadding / 2),
                                   child: UserTile(
-                                    user: User(name: slot.playerName),
-                                    isStack: slot.isStack,
+                                    user: User(name: player),
+                                    isStack: false,
                                   ),
-                                );
-                              } else {
-                                return Padding(
-                                  padding: const EdgeInsets.all(
-                                      Constants.defaultPadding / 2),
-                                  child: AddTile(
-                                    Dialog: InviteDialog(
-                                        hostConnection: HostConnection(
-                                            playerId: slot.playerId,
-                                            serviceUuid:
-                                                watchHostConnectionProvider
-                                                    .serviceUuid,
-                                            notifyCharacteristicUuid:
-                                                slot.notifyCharacteristicUuid,
-                                            writeCharacteristicUuid:
-                                                slot.writeCharacteristicUuid,
-                                            isConnected: false)),
-                                  ),
-                                );
-                              }
-                            })
+                                )
                           ]),
                     ),
                     gameReady
@@ -266,6 +289,12 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                             );
                                             return;
                                           }
+                                          ref
+                                              .read(connectionProvider)
+                                              .startGame(ref);
+
+                                          debugPrint(
+                                              "Trying to start game lol");
                                           //TODO: Start game logic for BLE
                                           joiningGame = true;
                                         } else {

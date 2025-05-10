@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_scanner_overlay/qr_scanner_overlay.dart';
 
-import '../provider/client_connection_provider.dart';
 import '../utils/models/client_connection_model.dart';
 import '../utils/models/host_connection_model.dart';
 import 'lobby_screen.dart';
@@ -153,7 +152,7 @@ class _QrCodeScannerState extends ConsumerState<QrCodeScanner>
         await setValidColor();
         if (!mounted) return;
         Navigator.of(context).pop();
-        ref.read(connectionProvider).joinGame(hostConnection);
+        ref.read(connectionProvider).joinGame(hostConnection, ref);
         Navigator.of(context).pushReplacementNamed(LobbyScreen.route);
       } else {
         if (borderColor == Colors.white) await setInvalidColor();

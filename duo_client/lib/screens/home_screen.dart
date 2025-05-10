@@ -1,15 +1,11 @@
-import 'package:duo_client/pb/friend.pb.dart';
-import 'package:duo_client/provider/api_provider.dart';
 import 'package:duo_client/screens/dashboard_screen.dart';
-import 'package:duo_client/screens/leaderboard_screen.dart';
-import 'package:duo_client/screens/profile_screen.dart';
 import 'package:duo_client/utils/constants.dart';
 import 'package:duo_client/widgets/duo_bottom_nav_bar.dart';
 import 'package:duo_client/widgets/game_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter/services.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   static const route = "/home";
@@ -23,9 +19,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _currentIndex = 0;
   final List<Widget> _screens = [
     const DashboardScreen(),
-    // const LeaderboardScreen(),
-    // const ProfileScreen(),
-    // const DashboardScreen(),
+    const DashboardScreen(),
+    const DashboardScreen(),
+    const DashboardScreen(),
   ];
 
   @override

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
@@ -32,6 +31,9 @@ class HostConnectionProvider extends ChangeNotifier {
   late bool _isAdvertising = false;
   bool _isGameReady = false;
 
+  late final Map<String, Map<String, Function(Parameters?, String, String)>>
+      messageRouter;
+
   Map<String, ClientConnection> get clientSlots => _clientSlots;
 
   bool get isAdvertising => _isAdvertising;
@@ -41,6 +43,23 @@ class HostConnectionProvider extends ChangeNotifier {
   List<ClientConnection> get connectedClients => _connectedClients;
 
   bool get isGameReady => _isGameReady;
+
+  HostConnectionProvider() {
+    messageRouter = {
+      'connection': {
+        'register': (params, playerId, centralUuid) =>
+            registerPlayer(params, playerId, centralUuid),
+      },
+      'cards': {
+        'place': (params, playerId, centralUuid) =>
+            debugPrint("[message received] cards -> place ${params?.card}"),
+        'draw': (params, playerId, centralUuid) =>
+            debugPrint("[message received] cards -> draw ${params?.cards}"),
+      },
+      'game': {},
+      //   TODO: Add all other actions that are to be handled with connection
+    };
+  }
 
   Future<void> createLobby() async {
     _serviceUuid = uuid.v4();
@@ -71,6 +90,7 @@ class HostConnectionProvider extends ChangeNotifier {
   Future<void> deleteLobby() async {
     await stopAdvertising();
     _clientSlots.clear();
+    notifyListeners();
   }
 
   Future<void> startAdvertising() async {
@@ -178,7 +198,7 @@ class HostConnectionProvider extends ChangeNotifier {
     return uuid.v4().toString();
   }
 
-  Future<void> subscribeToPlayerRegistrations() async {
+  Future<void> subscribeToNotifyCharacteristics() async {
     try {
       debugPrint("Subscribing to player registrations");
       for (var client
@@ -189,16 +209,18 @@ class HostConnectionProvider extends ChangeNotifier {
               UUID.fromString(client.writeCharacteristicUuid)) {
             final request = DuoMessage.fromUint8List(eventArgs.request.value);
             final central = eventArgs.central;
+            final centralUuid = central.uuid.toString();
 
-            if (request.type == "connection" && request.action == "register") {
-              client.playerName = request.parameters?.playerName;
-              client.centralUuid = central.uuid.toString();
-              client.isConnected = true;
-            }
-            notifyListeners();
-            debugPrint(
-                "Player Registration received for: ${request.parameters?.playerName}");
-            updateLobbyInClients();
+            handleMessage(request, client.playerId, centralUuid);
+
+            // if (request.type == "connection" && request.action == "register") {
+            //   client.playerName = request.parameters?.playerName;
+            //   client.centralUuid = central.uuid.toString();
+            //   client.isConnected = true;
+            // }
+            // notifyListeners();
+            // debugPrint(
+            //     "Player Registration received for: ${request.parameters?.playerName}");
           }
         });
         _clientStreamSubscriptions[client] = subscription;
@@ -218,6 +240,15 @@ class HostConnectionProvider extends ChangeNotifier {
   Future<void> sendMessage(String playerId, DuoMessage message) async {
     try {
       debugPrint("Sending message to playerId: $playerId");
+      if (_connectedClients.isEmpty) {
+        debugPrint("connectedClients is empty");
+      } else {
+        for (var connectedClient in _connectedClients) {
+          debugPrint(
+              "${connectedClient.playerId} ${connectedClient.isConnected}");
+        }
+      }
+
       final clientInformation =
           _connectedClients.firstWhere((client) => client.playerId == playerId);
 
@@ -234,19 +265,46 @@ class HostConnectionProvider extends ChangeNotifier {
 
       await _peripheralManager.notifyCharacteristic(
           Central(uuid: UUID.fromString(centralUuid!)), characteristic,
-          value: utf8.encode(message.toJson().toString()));
+          value: message.toUint8List());
+      debugPrint("Sent message: ${message.toUint8List()}");
     } catch (error) {
       debugPrint("Error when looking for playerId: $playerId: $error");
     }
   }
 
-  Future<void> updateLobbyInClients() async {
+  Future<void> sendMessageToAllClients(DuoMessage message) async {
+    for (var client in _connectedClients) {
+      await sendMessage(client.playerId, message);
+    }
+  }
+
+  void handleMessage(DuoMessage message, String playerId, String centralUuid) {
+    final typeHandlers = messageRouter[message.type];
+    final handler = typeHandlers?[message.action];
+
+    if (handler != null) {
+      handler(message.parameters, playerId, centralUuid);
+    } else {
+      debugPrint(
+          "No handler for type='${message.type}', action='${message.action}'");
+    }
+  }
+
+  Future<void> registerPlayer(
+      Parameters? params, String? playerId, String? centralUuid) async {
+    final player = _clientSlots.values
+        .where((client) => client.playerId == playerId)
+        .where((client) => !client.isConnected)
+        .first;
+    player.playerName = params?.playerName;
+    player.isConnected = true;
+    player.centralUuid = centralUuid;
+    notifyListeners();
     _clientSlots.forEach((String playerId, ClientConnection clientConnection) {
       if (clientConnection.isConnected && !clientConnection.isStack) {
         _connectedClients.add(clientConnection);
       }
     });
-
     var message = DuoMessage(
         type: "connection",
         action: "update_lobby",
@@ -255,14 +313,16 @@ class HostConnectionProvider extends ChangeNotifier {
                 .map((element) => element.playerName)
                 .whereType<String>()
                 .toList()));
+    sendMessageToAllClients(message);
+  }
 
-    for (var clientConnection in _connectedClients) {
-      debugPrint(clientConnection.playerName);
-      sendMessage(
-        clientConnection.playerId,
-        message,
-      );
-    }
+  Future<void> updateCardsInClient(String playerId, List<String> cards) async {
+    sendMessage(
+        playerId,
+        DuoMessage(
+            type: "cards",
+            action: "update",
+            parameters: Parameters(cards: cards)));
   }
 }
 

@@ -3,12 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:duo_client/provider/connection_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../utils/models/host_connection_model.dart';
+import '../utils/models/message_model.dart';
 
 class ClientConnectionProvider extends ChangeNotifier {
   late final List<DiscoveredEventArgs> _discoveries = [];
@@ -35,6 +36,8 @@ class ClientConnectionProvider extends ChangeNotifier {
   bool _isDeviceDiscovered = false;
   bool _isDeviceConnected = false;
   bool _isPlayerRegistered = false;
+  List<String> _playerList = [];
+  bool _isGameReady = false;
 
   String _playerName = "Spieler 1";
   late List<GATTService> _discoveredGatt;
@@ -53,17 +56,42 @@ class ClientConnectionProvider extends ChangeNotifier {
     isConnected: false,
     serviceUuid: "",
   );
-  final _serviceUuid = UUID.fromString("87654321-1234-5678-1234-56789abcdef1");
+
+  late final Map<String, Map<String, Function(Parameters?)>> messageRouter;
+
+  ClientConnectionProvider() {
+    messageRouter = {
+      'connection': {
+        'update_lobby': (params) => updateLobby(params?.lobbyList),
+      },
+      'cards': {
+        'update': (params) =>
+            debugPrint("[message received] cards -> update ${params?.cards}"),
+      },
+      'game': {
+        'start': (params) => startGame(),
+        'stop': (params) =>
+            debugPrint("[message received] game -> stop ${params?.card}"),
+        'your_turn': (params) =>
+            debugPrint("[message received] game -> your_turn ${params?.card}"),
+        'skip': (params) =>
+            debugPrint("[message received] game -> skip ${params?.card}"),
+      },
+      //   TODO: Add all other actions that are to be handled with connection
+    };
+  }
 
   BluetoothLowEnergyState get state => _centralManager.state;
 
   bool get isDiscovering => _isDiscovering;
 
+  bool get isGameReady => _isGameReady;
+
   List<DiscoveredEventArgs> get discoveries => _discoveries;
 
-  UUID get serviceUuids => _serviceUuid;
-
   bool get isConnectionWanted => _isConnectionWanted;
+
+  List<String> get playerList => _playerList;
 
   Future<void> handleConnection(HostConnection hostConnection) async {
     _connectionInformation = hostConnection;
@@ -101,7 +129,7 @@ class ClientConnectionProvider extends ChangeNotifier {
 
       // 4. Listen for disconnections
 
-      // await subscribeToStuff(peripheral);
+      // unsubscribeFromNotification();
     } catch (e) {
       debugPrint("Error handling connection: $e");
       return;
@@ -248,7 +276,7 @@ class ClientConnectionProvider extends ChangeNotifier {
     try {
       await _centralManager.writeCharacteristic(peripheral, characteristic2,
           value: utf8.encode(jsonEncode(value)),
-          type: GATTCharacteristicWriteType.withoutResponse);
+          type: GATTCharacteristicWriteType.withResponse);
       debugPrint("Wrote to characteristic successfully!");
     } on Exception catch (e) {
       debugPrint("Error when writing characteristic: $e");
@@ -301,6 +329,9 @@ class ClientConnectionProvider extends ChangeNotifier {
         if (event.characteristic.uuid == notifyCharacteristic.uuid) {
           // Decode and print the received data
           final receivedData = utf8.decode(event.value);
+
+          handleMessage(DuoMessage.fromUint8List(event.value));
+
           debugPrint(
               "Received data from $notifyCharacteristicUuid: $receivedData");
         }
@@ -308,30 +339,6 @@ class ClientConnectionProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint("Error subscribing to notify characteristic: $e");
     }
-  }
-
-  Future<void> subscribeToStuff(Peripheral peripheral) async {
-    final characteristic = GATTCharacteristic.mutable(
-      uuid: UUID.fromString(_connectionInformation.notifyCharacteristicUuid),
-      properties: [GATTCharacteristicProperty.notify],
-      permissions: [GATTCharacteristicPermission.read],
-      descriptors: [],
-    );
-
-    var notifyCharacteristic = _discoveredGatt
-        .firstWhere((service) =>
-            service.uuid == UUID.fromString(_connectionInformation.serviceUuid))
-        .characteristics
-        .firstWhere((characteristic) =>
-            characteristic.uuid ==
-            UUID.fromString(_connectionInformation.notifyCharacteristicUuid));
-
-    // var notification = _centralManager
-    //     .setCharacteristicNotifyState(peripheral, characteristic, state: state);
-    var subscription =
-        _centralManager.characteristicNotified.listen((notification) async {
-      debugPrint("Received notification: $notification");
-    });
   }
 
   Future<void> discoverCharacteristics(Peripheral peripheral) async {
@@ -355,6 +362,47 @@ class ClientConnectionProvider extends ChangeNotifier {
     debugPrint(
         "notifyCharacteristic and writeCharacteristic: ${_notifyCharacteristic.uuid}, ${_writeCharacteristic.uuid}");
   }
+
+  Future<void> unsubscribeFromNotification(
+      peripheral, notifyCharacteristic) async {
+    await _centralManager.setCharacteristicNotifyState(
+      peripheral,
+      notifyCharacteristic,
+      state: false, // Enable notifications
+    );
+  }
+
+  void handleMessage(DuoMessage message) {
+    final typeHandlers = messageRouter[message.type];
+    final handler = typeHandlers?[message.action];
+
+    if (handler != null) {
+      handler(message.parameters);
+    } else {
+      debugPrint(
+          "No handler for type='${message.type}', action='${message.action}'");
+    }
+  }
+
+  void updateLobby(List<String>? lobbyList) {
+    _playerList = List.from(lobbyList!);
+    notifyListeners();
+    if (!listEquals(lobbyList, _playerList)) {}
+    debugPrint("updated lobby list: $_playerList");
+  }
+
+  void updateCards(List<String> cards, WidgetRef ref) {
+    final connection = ref.watch(connectionProvider);
+    connection.updateCards(cards);
+  }
+
+  void startGame() {
+    // ref.read(connectionProvider).startGame(ref);
+    _isGameReady = true;
+    notifyListeners();
+  }
+
+  void updatePlayerList(List<String> newPlayerList) {}
 }
 
 // TODO: Add reconnect mechanism to reconnect when connectionState == true. Max timeout 5 minutes
