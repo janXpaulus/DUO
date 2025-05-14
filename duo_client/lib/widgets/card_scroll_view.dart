@@ -18,7 +18,13 @@ class CardScrollView extends ConsumerStatefulWidget {
 
 class _CardScrollViewState extends ConsumerState<CardScrollView> {
   bool isTurn = true;
-  List<duo.PlayingCard> cards = [];
+  List<duo.PlayingCard> cards = [
+    //TODO delete
+    const duo.PlayingCard.fromCard(cardName: 'green_3'),
+    const duo.PlayingCard.fromCard(cardName: 'purple_4'),
+    const duo.PlayingCard.fromCard(cardName: 'yellow_draw_2'),
+    const duo.PlayingCard.fromCard(cardName: 'red_1'),
+  ];
   List<String> cardNames = [];
 
   //ToDo: BUG if the cards are removed before the animation is done it will crash or before on Reorder is done

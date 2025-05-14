@@ -5,7 +5,6 @@ import 'package:duo_client/provider/host_connection_provider.dart';
 import 'package:duo_client/screens/game_screen.dart';
 import 'package:duo_client/screens/home_screen.dart';
 import 'package:duo_client/utils/constants.dart';
-import 'package:duo_client/widgets/card_scroll_view.dart';
 import 'package:duo_client/widgets/user_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -42,9 +41,15 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
     //   ref.read(apiProvider).sendUserstatusUpdate(
     //       await ref.read(apiProvider).getToken(), FriendState.inLobby);
     // });
-
+    bool isGameReady = ref.watch(hostConnectionProvider).isGameReady;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(hostConnectionProvider).subscribeToNotifyCharacteristics();
+      if (isGameReady) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const GameScreen()),
+        );
+      }
     });
   }
 
@@ -77,10 +82,14 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
     final watchHostConnectionProvider = ref.watch(hostConnectionProvider);
 
     final isHostConnection = ref.watch(connectionProvider).isHostConnection;
-
-    if (isGameReady) {
-      Navigator.of(context).push(CardScrollView.route);
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (isGameReady) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const GameScreen()),
+        );
+      }
+    });
 
     return Scaffold(
       backgroundColor: Constants.bgColor,
