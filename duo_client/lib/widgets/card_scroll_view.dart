@@ -1,8 +1,10 @@
-import 'package:duo_client/provider/connection_provider.dart';
+import 'package:duo_client/provider/client_connection_provider.dart';
 import 'package:duo_client/utils/constants.dart';
 import 'package:duo_client/widgets/playingcard.dart' as duo;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../provider/connection_provider.dart';
 
 class CardScrollView extends ConsumerStatefulWidget {
   const CardScrollView({super.key});
@@ -32,6 +34,7 @@ class _CardScrollViewState extends ConsumerState<CardScrollView> {
   @override
   Widget build(BuildContext context) {
     cardNames = ref.watch(connectionProvider).cards;
+    debugPrint("$cardNames");
     cards = cardNames
         .map((element) => duo.PlayingCard.fromCard(cardName: element))
         .toList();
@@ -77,6 +80,8 @@ class _CardScrollViewState extends ConsumerState<CardScrollView> {
   }
 
   void playCard(int index) {
+    final card = cards[index].cardName;
+    ref.read(clientConnectionProvider).placeCard(card);
     // debugPrint('Playing card with value ${cards[index].cardName}');
     // ref.read(apiProvider).streamPlayerAction(PlayerAction(
     //       action: PlayerAction_ActionType.PLACE,

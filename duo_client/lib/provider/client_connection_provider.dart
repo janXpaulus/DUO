@@ -12,6 +12,7 @@ import '../utils/models/host_connection_model.dart';
 import '../utils/models/message_model.dart';
 
 class ClientConnectionProvider extends ChangeNotifier {
+  final Ref ref;
   late final List<DiscoveredEventArgs> _discoveries = [];
   late bool _isDiscovering = false;
 
@@ -38,6 +39,7 @@ class ClientConnectionProvider extends ChangeNotifier {
   bool _isPlayerRegistered = false;
   List<String> _playerList = [];
   bool _isGameReady = false;
+  late Peripheral _peripheral;
 
   String _playerName = "Spieler 1";
   late List<GATTService> _discoveredGatt;
@@ -59,14 +61,14 @@ class ClientConnectionProvider extends ChangeNotifier {
 
   late final Map<String, Map<String, Function(Parameters?)>> messageRouter;
 
-  ClientConnectionProvider() {
+  ClientConnectionProvider(this.ref) {
+    debugPrint("ClientConnectionProvider initialized!");
     messageRouter = {
       'connection': {
         'update_lobby': (params) => updateLobby(params?.lobbyList),
       },
       'cards': {
-        'update': (params) =>
-            debugPrint("[message received] cards -> update ${params?.cards}"),
+        'update': (params) => updateCards(params!.cards!, ref),
       },
       'game': {
         'start': (params) => startGame(),
@@ -176,8 +178,8 @@ class ClientConnectionProvider extends ChangeNotifier {
 
     _discoveredSubscription =
         _centralManager.discovered.listen((eventArgs) async {
-      final peripheral = eventArgs.peripheral;
-      final index = _discoveries.indexWhere((i) => i.peripheral == peripheral);
+      _peripheral = eventArgs.peripheral;
+      final index = _discoveries.indexWhere((i) => i.peripheral == _peripheral);
 
       if (index < 0) {
         _discoveries.add(eventArgs);
@@ -187,7 +189,7 @@ class ClientConnectionProvider extends ChangeNotifier {
 
       notifyListeners();
       debugPrint(
-          "Peripheral UUID: ${peripheral.uuid}, serviceUUIDs: ${eventArgs.advertisement.serviceUUIDs}, RSSI: ${eventArgs.rssi}");
+          "Peripheral UUID: ${_peripheral.uuid}, serviceUUIDs: ${eventArgs.advertisement.serviceUUIDs}, RSSI: ${eventArgs.rssi}");
 
       if (eventArgs.advertisement.serviceUUIDs
           .contains(UUID.fromString(_connectionInformation.serviceUuid))) {
@@ -265,7 +267,7 @@ class ClientConnectionProvider extends ChangeNotifier {
       "parameters": {"playerName": playerName}
     };
 
-    var characteristic2 = _discoveredGatt
+    _writeCharacteristic = _discoveredGatt
         .firstWhere((service) =>
             service.uuid == UUID.fromString(_connectionInformation.serviceUuid))
         .characteristics
@@ -274,9 +276,12 @@ class ClientConnectionProvider extends ChangeNotifier {
             UUID.fromString(_connectionInformation.writeCharacteristicUuid));
 
     try {
-      await _centralManager.writeCharacteristic(peripheral, characteristic2,
-          value: utf8.encode(jsonEncode(value)),
-          type: GATTCharacteristicWriteType.withResponse);
+      final message = DuoMessage(
+          type: "connection",
+          action: "register",
+          parameters: Parameters(playerName: playerName));
+      await sendMessage(message);
+
       debugPrint("Wrote to characteristic successfully!");
     } on Exception catch (e) {
       debugPrint("Error when writing characteristic: $e");
@@ -391,8 +396,9 @@ class ClientConnectionProvider extends ChangeNotifier {
     debugPrint("updated lobby list: $_playerList");
   }
 
-  void updateCards(List<String> cards, WidgetRef ref) {
-    final connection = ref.watch(connectionProvider);
+  void updateCards(List<String> cards, Ref ref) {
+    final connection = ref.read(connectionProvider);
+    debugPrint("ConnectionProvider state: $connection");
     connection.updateCards(cards);
   }
 
@@ -403,10 +409,23 @@ class ClientConnectionProvider extends ChangeNotifier {
   }
 
   void updatePlayerList(List<String> newPlayerList) {}
+
+  Future<void> placeCard(String cardName) async {
+    final message = DuoMessage(
+        type: "cards", action: "place", parameters: Parameters(card: cardName));
+    await sendMessage(message);
+  }
+
+  Future<void> sendMessage(DuoMessage message) async {
+    await _centralManager.writeCharacteristic(_peripheral, _writeCharacteristic,
+        value: message.toUint8List(),
+        type: GATTCharacteristicWriteType.withResponse);
+  }
 }
 
 // TODO: Add reconnect mechanism to reconnect when connectionState == true. Max timeout 5 minutes
 
 final clientConnectionProvider =
-    ChangeNotifierProvider<ClientConnectionProvider>(
-        (ref) => ClientConnectionProvider());
+    ChangeNotifierProvider<ClientConnectionProvider>((ref) {
+  return ClientConnectionProvider(ref);
+});

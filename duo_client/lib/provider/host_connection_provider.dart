@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
+import 'package:duo_client/provider/dummy_game_provider.dart';
 import 'package:duo_client/provider/storage_provider.dart';
 import 'package:duo_client/utils/models/client_connection_model.dart';
 import 'package:duo_client/utils/models/message_model.dart';
@@ -12,10 +13,7 @@ import 'package:uuid/uuid.dart';
 import '../utils/constants.dart';
 
 class HostConnectionProvider extends ChangeNotifier {
-  final hostConnectionProvider =
-      ChangeNotifierProvider<HostConnectionProvider>((ref) {
-    return HostConnectionProvider();
-  });
+  final Ref ref;
 
   final PeripheralManager _peripheralManager = PeripheralManager();
   final uuid = Uuid();
@@ -44,7 +42,7 @@ class HostConnectionProvider extends ChangeNotifier {
 
   bool get isGameReady => _isGameReady;
 
-  HostConnectionProvider() {
+  HostConnectionProvider(this.ref) {
     messageRouter = {
       'connection': {
         'register': (params, playerId, centralUuid) =>
@@ -52,7 +50,8 @@ class HostConnectionProvider extends ChangeNotifier {
       },
       'cards': {
         'place': (params, playerId, centralUuid) =>
-            debugPrint("[message received] cards -> place ${params?.card}"),
+            // debugPrint("[message received] cards -> place ${params?.card}")
+            placeCardOnStack(params!.card!, playerId, ref),
         'draw': (params, playerId, centralUuid) =>
             debugPrint("[message received] cards -> draw ${params?.cards}"),
       },
@@ -324,7 +323,17 @@ class HostConnectionProvider extends ChangeNotifier {
             action: "update",
             parameters: Parameters(cards: cards)));
   }
+
+  Future<void> placeCardOnStack(
+      String cardName, String playerId, Ref ref) async {
+    final dummyGame = ref.read(dummyGameProvider);
+    dummyGame.stackList.add(cardName);
+    notifyListeners();
+    dummyGame.playerCards[playerId]?.remove(cardName);
+    notifyListeners();
+    updateCardsInClient(playerId, dummyGame.playerCards[playerId] ?? []);
+  }
 }
 
 final hostConnectionProvider = ChangeNotifierProvider<HostConnectionProvider>(
-    (ref) => HostConnectionProvider());
+    (ref) => HostConnectionProvider(ref));

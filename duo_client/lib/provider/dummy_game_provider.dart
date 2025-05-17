@@ -7,7 +7,7 @@ class DummyGameProvider extends ChangeNotifier {
     return DummyGameProvider();
   });
 
-  final cardsList = [
+  final _cardsList = [
     "draw_4",
     "green_1",
     "green_2",
@@ -60,12 +60,18 @@ class DummyGameProvider extends ChangeNotifier {
     "yellow_suspend",
   ];
 
-  Map<String, List<String>> playerCards = {};
+  List<String> _stackList = [];
+
+  Map<String, List<String>> _playerCards = {};
+
+  List<String> get stackList => _stackList;
+
+  Map<String, List<String>> get playerCards => _playerCards;
 
   Future<void> startGame(WidgetRef ref) async {
     //  Generate hands of cards
-    cardsList.shuffle();
-    final shuffledCardsList = List<String>.from(cardsList);
+    _cardsList.shuffle();
+    final shuffledCardsList = List<String>.from(_cardsList);
     final hostConnection = ref.read(hostConnectionProvider);
     final connectedClients = hostConnection.connectedClients;
     for (var slot in connectedClients) {
@@ -84,6 +90,17 @@ class DummyGameProvider extends ChangeNotifier {
       await hostConnection.updateCardsInClient(
           slot.playerId, playerCards[slot.playerId] ?? []);
     }
+  }
+
+  Future<void> placePlayerCardOnStack(
+      String cardName, String playerId, Ref ref) async {
+    _stackList.add(cardName);
+    notifyListeners();
+    _playerCards[playerId]?.remove(cardName);
+    notifyListeners();
+    // await ref
+    //     .read(hostConnectionProvider)
+    //     .updateCardsInClient(playerId, playerCards[playerId] ?? []);
   }
 }
 

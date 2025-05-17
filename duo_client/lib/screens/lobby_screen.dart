@@ -41,9 +41,10 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
     //   ref.read(apiProvider).sendUserstatusUpdate(
     //       await ref.read(apiProvider).getToken(), FriendState.inLobby);
     // });
-    bool isGameReady = ref.watch(hostConnectionProvider).isGameReady;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(hostConnectionProvider).subscribeToNotifyCharacteristics();
+      bool isGameReady = ref.watch(hostConnectionProvider).isGameReady;
       if (isGameReady) {
         Navigator.pushReplacement(
           context,

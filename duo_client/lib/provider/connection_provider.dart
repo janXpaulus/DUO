@@ -62,10 +62,11 @@ class ConnectionProvider extends ChangeNotifier {
     if (_isHostConnection) {
       await hostConnection.deleteLobby();
       hostConnection.isAdvertising ? _isInLobby = true : _isInLobby = false;
-      hostConnection.dispose();
+      notifyListeners();
+      // hostConnection.dispose();
     } else {
       // ClientConnectionProvider() leave lobby
-      clientConnection.dispose();
+      // clientConnection.dispose();
     }
     _isInLobby = false;
   }
@@ -92,6 +93,9 @@ class ConnectionProvider extends ChangeNotifier {
     _cards = cards;
     notifyListeners();
   }
+
+  Future<void> placePlayerCardOnStack(
+      String cardName, String playerId, Ref ref) async {}
 }
 
 final connectionProvider =

@@ -1,12 +1,9 @@
-import 'package:duo_client/pb/friend.pb.dart';
-import 'package:duo_client/pb/game.pb.dart';
-import 'package:duo_client/provider/api_provider.dart';
 import 'package:duo_client/utils/constants.dart';
+import 'package:duo_client/widgets/card_scroll_view.dart';
 import 'package:duo_client/widgets/game_stacks.dart';
 import 'package:duo_client/widgets/pause_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:duo_client/widgets/card_scroll_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -61,7 +58,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   @override
   void dispose() {
     debugPrint('Disposing game_screen');
-    closeAllStreams();
+    // closeAllStreams();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -71,7 +68,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool isStack = ref.read(apiProvider).isStackOwner;
+    bool isStack = false;
     return Scaffold(
       body: Stack(children: [
         // Main game screen either card scroll view or game stacks
@@ -96,7 +93,8 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                 context: context,
                 builder: (context) => PauseDialog(
                   onExit: () {
-                    closeAllStreams();
+                    Navigator.of(context).pop();
+                    // closeAllStreams();
                   },
                 ),
               );
@@ -107,12 +105,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     );
   }
 
-  void closeAllStreams() {
-    if (ref.read(apiProvider).isStackOwner) {
-      ref.read(apiProvider).closeStackStream();
-    } else {
-      ref.read(apiProvider).closePlayerStream();
-      ref.read(apiProvider).closeGameStream();
-    }
-  }
+// void closeAllStreams() {
+//   if (ref.read(apiProvider).isStackOwner) {
+//     ref.read(apiProvider).closeStackStream();
+//   } else {
+//     ref.read(apiProvider).closePlayerStream();
+//     ref.read(apiProvider).closeGameStream();
+//   }
+// }
 }
