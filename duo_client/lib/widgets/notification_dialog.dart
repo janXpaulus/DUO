@@ -1,5 +1,4 @@
 import 'package:duo_client/pb/friend.pb.dart';
-import 'package:duo_client/provider/api_provider.dart';
 import 'package:duo_client/provider/notification_provider.dart';
 import 'package:duo_client/utils/constants.dart';
 import 'package:duo_client/widgets/friend_request_tile.dart';

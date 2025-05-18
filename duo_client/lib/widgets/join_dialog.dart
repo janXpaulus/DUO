@@ -1,9 +1,5 @@
-import 'package:duo_client/provider/api_provider.dart';
-import 'package:duo_client/provider/storage_provider.dart';
-import 'package:duo_client/screens/lobby_screen.dart';
 import 'package:duo_client/screens/qr_scanner_screen.dart';
 import 'package:duo_client/utils/constants.dart';
-import 'package:duo_client/utils/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

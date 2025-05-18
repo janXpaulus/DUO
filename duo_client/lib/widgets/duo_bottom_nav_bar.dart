@@ -2,9 +2,7 @@ import 'dart:ui';
 
 import 'package:duo_client/utils/constants.dart';
 import 'package:duo_client/widgets/duo_container.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class DuoBottomNavigationItem {

@@ -1,8 +1,5 @@
-import 'package:duo_client/provider/api_provider.dart';
 import 'package:duo_client/provider/client_connection_provider.dart';
 import 'package:duo_client/provider/connection_provider.dart';
-import 'package:duo_client/provider/host_connection_provider.dart';
-import 'package:duo_client/provider/storage_provider.dart';
 import 'package:duo_client/screens/lobby_screen.dart';
 import 'package:duo_client/utils/constants.dart';
 import 'package:duo_client/widgets/duo_container.dart';
