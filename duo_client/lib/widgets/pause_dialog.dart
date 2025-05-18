@@ -1,8 +1,4 @@
-import 'package:duo_client/pb/friend.pb.dart';
-import 'package:duo_client/provider/api_provider.dart';
-import 'package:duo_client/screens/home_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class PauseDialog extends ConsumerStatefulWidget {
@@ -53,22 +49,7 @@ class _PauseDialogState extends ConsumerState<PauseDialog> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    // TODO: Add logic to resume game with BLE
-                    // String token = await ref.read(apiProvider).getToken();
-                    // ref
-                    //     .read(apiProvider)
-                    //     .sendUserstatusUpdate(token, FriendState.online);
-
-                    // SystemChrome.setEnabledSystemUIMode(
-                    //     SystemUiMode.edgeToEdge);
-                    // SystemChrome.setPreferredOrientations([
-                    //   DeviceOrientation.portraitUp,
-                    //   DeviceOrientation.portraitDown,
-                    // ]);
-                    // widget.onExit();
-                    // if (!context.mounted) return;
-                    // Navigator.of(context)
-                    //     .pushReplacementNamed(HomeScreen.route);
+                    widget.onExit();
                   },
                   child:
                       const Text('Exit', style: TextStyle(color: Colors.white)),

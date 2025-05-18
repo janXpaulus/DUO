@@ -41,7 +41,7 @@ class ClientConnectionProvider extends ChangeNotifier {
   bool _isGameReady = false;
   late Peripheral _peripheral;
 
-  String _playerName = "Spieler 1";
+  String _playerName = "Iruska";
   late List<GATTService> _discoveredGatt;
   late GATTCharacteristic _notifyCharacteristic;
   late GATTCharacteristic _writeCharacteristic;
@@ -65,13 +65,23 @@ class ClientConnectionProvider extends ChangeNotifier {
     debugPrint("ClientConnectionProvider initialized!");
     messageRouter = {
       'connection': {
-        'update_lobby': (params) => updateLobby(params?.lobbyList),
+        'update_lobby': (params) {
+          debugPrint(
+              "[message received] connection -> update_lobby ${params?.lobbyList}");
+          updateLobby(params?.lobbyList);
+        },
       },
       'cards': {
-        'update': (params) => updateCards(params!.cards!, ref),
+        'update': (params) {
+          debugPrint("[message received] cards -> update ${params?.card}");
+          updateCards(params!.cards!, ref);
+        },
       },
       'game': {
-        'start': (params) => startGame(),
+        'start': (params) {
+          debugPrint("[message received] game -> start ${params}");
+          startGame();
+        },
         'stop': (params) =>
             debugPrint("[message received] game -> stop ${params?.card}"),
         'your_turn': (params) =>
@@ -419,7 +429,13 @@ class ClientConnectionProvider extends ChangeNotifier {
   Future<void> sendMessage(DuoMessage message) async {
     await _centralManager.writeCharacteristic(_peripheral, _writeCharacteristic,
         value: message.toUint8List(),
-        type: GATTCharacteristicWriteType.withResponse);
+        type: GATTCharacteristicWriteType.withoutResponse);
+  }
+
+  Future<void> disconnect() async {
+    await _centralManager.disconnect(_peripheral);
+    _isGameReady = false;
+    notifyListeners();
   }
 }
 

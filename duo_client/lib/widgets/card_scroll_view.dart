@@ -66,8 +66,7 @@ class _CardScrollViewState extends ConsumerState<CardScrollView> {
             key: UniqueKey(),
             direction: DismissDirection.up,
             onDismissed: (direction) {
-              playCard(index);
-              setState(() => cards.removeAt(index));
+              setState(() => playCard(index));
             },
             child: Padding(
               padding: const EdgeInsets.all(8.0),

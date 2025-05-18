@@ -1,3 +1,4 @@
+import 'package:duo_client/provider/connection_provider.dart';
 import 'package:duo_client/utils/constants.dart';
 import 'package:duo_client/widgets/card_scroll_view.dart';
 import 'package:duo_client/widgets/game_stacks.dart';
@@ -68,7 +69,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool isStack = false;
+    bool isStack = ref.read(connectionProvider).isHostConnection;
     return Scaffold(
       body: Stack(children: [
         // Main game screen either card scroll view or game stacks
@@ -93,7 +94,9 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                 context: context,
                 builder: (context) => PauseDialog(
                   onExit: () {
-                    Navigator.of(context).pop();
+                    ref.read(connectionProvider).leaveLobby(ref);
+                    Navigator.of(context).popAndPushNamed("/home");
+
                     // closeAllStreams();
                   },
                 ),

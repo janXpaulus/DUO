@@ -42,16 +42,26 @@ class HostConnectionProvider extends ChangeNotifier {
 
   bool get isGameReady => _isGameReady;
 
+  set isGameReady(bool value) {
+    _isGameReady = value;
+    notifyListeners();
+  }
+
   HostConnectionProvider(this.ref) {
     messageRouter = {
       'connection': {
-        'register': (params, playerId, centralUuid) =>
-            registerPlayer(params, playerId, centralUuid),
+        'register': (params, playerId, centralUuid) {
+          debugPrint("[message received] connection -> register ${params}");
+          registerPlayer(params, playerId, centralUuid);
+        },
       },
       'cards': {
-        'place': (params, playerId, centralUuid) =>
+        'place': (params, playerId, centralUuid)
             // debugPrint("[message received] cards -> place ${params?.card}")
-            placeCardOnStack(params!.card!, playerId, ref),
+            {
+          debugPrint("[message received] cards -> place ${params?.card}");
+          placeCardOnStack(params!.card!, playerId, ref);
+        },
         'draw': (params, playerId, centralUuid) =>
             debugPrint("[message received] cards -> draw ${params?.cards}"),
       },
@@ -89,6 +99,8 @@ class HostConnectionProvider extends ChangeNotifier {
   Future<void> deleteLobby() async {
     await stopAdvertising();
     _clientSlots.clear();
+    _connectedClients = [];
+    _isGameReady = false;
     notifyListeners();
   }
 
@@ -146,7 +158,7 @@ class HostConnectionProvider extends ChangeNotifier {
   Future<void> watchForConnectionStateChange() async {
     try {
       _connectionStateChangedSubscription =
-          await _peripheralManager.connectionStateChanged.listen((eventArgs) {
+          _peripheralManager.connectionStateChanged.listen((eventArgs) {
         debugPrint("Connection State Changed: $eventArgs");
       });
     } on Exception catch (error) {
@@ -199,7 +211,7 @@ class HostConnectionProvider extends ChangeNotifier {
 
   Future<void> subscribeToNotifyCharacteristics() async {
     try {
-      debugPrint("Subscribing to player registrations");
+      debugPrint("Subscribing to notifyCharacteristics");
       for (var client
           in _clientSlots.values.where((client) => !client.isConnected)) {
         var subscription = _peripheralManager.characteristicWriteRequested
@@ -221,6 +233,7 @@ class HostConnectionProvider extends ChangeNotifier {
             // debugPrint(
             //     "Player Registration received for: ${request.parameters?.playerName}");
           }
+          return;
         });
         _clientStreamSubscriptions[client] = subscription;
       }
@@ -332,6 +345,11 @@ class HostConnectionProvider extends ChangeNotifier {
     dummyGame.playerCards[playerId]?.remove(cardName);
     notifyListeners();
     updateCardsInClient(playerId, dummyGame.playerCards[playerId] ?? []);
+  }
+
+  Future<void> notifyPlayerOfTurn(String playerId) async {
+    final message = DuoMessage(type: "game", action: "your_turn");
+    await sendMessage(playerId, message);
   }
 }
 

@@ -60,24 +60,30 @@ class DummyGameProvider extends ChangeNotifier {
     "yellow_suspend",
   ];
 
+  List<String> _shuffledCardsList = [];
+
   List<String> _stackList = [];
 
   Map<String, List<String>> _playerCards = {};
+
+  String _currentTurnPlayer = "";
 
   List<String> get stackList => _stackList;
 
   Map<String, List<String>> get playerCards => _playerCards;
 
+  List<String> get shuffledCardsList => _shuffledCardsList;
+
   Future<void> startGame(WidgetRef ref) async {
     //  Generate hands of cards
     _cardsList.shuffle();
-    final shuffledCardsList = List<String>.from(_cardsList);
+    _shuffledCardsList = List<String>.from(_cardsList);
     final hostConnection = ref.read(hostConnectionProvider);
     final connectedClients = hostConnection.connectedClients;
     for (var slot in connectedClients) {
       List<String> playerCardList = [];
       for (var i = 0; i < 7; i++) {
-        playerCardList.add(shuffledCardsList.removeAt(0));
+        playerCardList.add(_shuffledCardsList.removeAt(0));
       }
       playerCards[slot.playerId] = playerCardList;
     }
@@ -90,17 +96,33 @@ class DummyGameProvider extends ChangeNotifier {
       await hostConnection.updateCardsInClient(
           slot.playerId, playerCards[slot.playerId] ?? []);
     }
+
+    _currentTurnPlayer = _playerCards.keys.first;
+    await hostConnection.notifyPlayerOfTurn(_currentTurnPlayer);
+    debugPrint("Current player: $_currentTurnPlayer");
+    hostConnection.isGameReady = true;
   }
 
   Future<void> placePlayerCardOnStack(
       String cardName, String playerId, Ref ref) async {
-    _stackList.add(cardName);
+    _stackList = List.from(_stackList)..add(cardName);
     notifyListeners();
     _playerCards[playerId]?.remove(cardName);
     notifyListeners();
     // await ref
     //     .read(hostConnectionProvider)
     //     .updateCardsInClient(playerId, playerCards[playerId] ?? []);
+  }
+
+  Future<void> sendCardToCurrentPlayer(WidgetRef ref, String cardName) async {
+    _playerCards[_currentTurnPlayer]?.add(cardName);
+    await ref.read(hostConnectionProvider).updateCardsInClient(
+        _currentTurnPlayer, _playerCards[_currentTurnPlayer]!);
+  }
+
+  Future<void> stopGame() async {
+    _stackList = [];
+    _playerCards.clear();
   }
 }
 

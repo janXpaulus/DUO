@@ -286,10 +286,9 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen>
                                                 .isHostConnection) {
                                           // TODO: change back to 3 players for a game but for testing purposes 2
                                           if (ref
-                                                  .read(hostConnectionProvider)
-                                                  .connectedClients
-                                                  .length >
-                                              1) {
+                                              .read(hostConnectionProvider)
+                                              .connectedClients
+                                              .isEmpty) {
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
                                               const SnackBar(

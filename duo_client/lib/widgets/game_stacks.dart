@@ -1,5 +1,5 @@
 import 'package:duo_client/pb/game.pb.dart';
-import 'package:duo_client/provider/api_provider.dart';
+import 'package:duo_client/provider/dummy_game_provider.dart';
 import 'package:duo_client/widgets/duo_card_stack.dart';
 import 'package:duo_client/widgets/playingcard.dart';
 import 'package:flutter/material.dart';
@@ -15,14 +15,15 @@ class GameStacks extends ConsumerStatefulWidget {
 class _GameStacksState extends ConsumerState<GameStacks> {
   @override
   Widget build(BuildContext context) {
+    List<String> stackList = ref.watch(dummyGameProvider).stackList;
+    debugPrint("$stackList");
+
     StackState stackState = StackState(
       drawStack: DrawStackState(
-          cardIds: ref.watch(apiProvider).stackState?.drawStack.cardIds ??
-              ['green_1']),
+          cardIds:
+              ref.watch(dummyGameProvider).shuffledCardsList ?? ['green_1']),
       placeStack: PlaceStackState(
-          cardIdOnTop:
-              ref.watch(apiProvider).stackState?.placeStack.cardIdOnTop ??
-                  'back'),
+          cardIdOnTop: stackList.isNotEmpty ? stackList.last : 'back'),
     );
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -34,13 +35,19 @@ class _GameStacksState extends ConsumerState<GameStacks> {
             child: DUOCardStack(
               cards: [
                 PlayingCard(
-                  cardName: stackState.drawStack.cardIds.first,
+                  cardName:
+                      ref.watch(dummyGameProvider).shuffledCardsList.isNotEmpty
+                          ? ref.watch(dummyGameProvider).shuffledCardsList.last
+                          : "back",
                   isFaceUp: false,
                 ),
               ],
               randomAngles: false,
               onTap: (PlayingCard card) async {
                 debugPrint('requesting Card for player');
+                ref
+                    .read(dummyGameProvider)
+                    .sendCardToCurrentPlayer(ref, card.cardName);
                 // String token = await ref.read(apiProvider).getToken();
                 // ref
                 //     .watch(apiProvider)
@@ -54,7 +61,9 @@ class _GameStacksState extends ConsumerState<GameStacks> {
             child: DUOCardStack(
               cards: [
                 PlayingCard(
-                  cardName: stackState.placeStack.cardIdOnTop,
+                  cardName: ref.watch(dummyGameProvider).stackList.isNotEmpty
+                      ? ref.watch(dummyGameProvider).stackList.last
+                      : 'back',
                   isFaceUp: true,
                 ),
               ],

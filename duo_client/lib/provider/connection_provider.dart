@@ -18,7 +18,6 @@ class ConnectionProvider extends ChangeNotifier {
 
   List<ClientConnection> _lobbySlots = [];
   List<String> _playerList = [];
-  bool _isGameReady = false;
 
   bool get isHostConnection => _isHostConnection;
 
@@ -29,8 +28,6 @@ class ConnectionProvider extends ChangeNotifier {
   List<ClientConnection> get lobbySlots => _lobbySlots;
 
   List<String> get cards => _cards;
-
-  bool get isGameReady => _isGameReady;
 
   Future<void> hostGame(WidgetRef ref) async {
     final hostConnection = ref.read(hostConnectionProvider);
@@ -58,15 +55,23 @@ class ConnectionProvider extends ChangeNotifier {
   Future<void> leaveLobby(WidgetRef ref) async {
     final hostConnection = ref.read(hostConnectionProvider);
     final clientConnection = ref.read(clientConnectionProvider);
+    final dummyGame = ref.read(dummyGameProvider);
     debugPrint("Leaving Lobby");
     if (_isHostConnection) {
       await hostConnection.deleteLobby();
+      await dummyGame.stopGame();
       hostConnection.isAdvertising ? _isInLobby = true : _isInLobby = false;
+      _lobbySlots = [];
+      _playerList = [];
+      ref.invalidate(dummyGameProvider);
+      ref.invalidate(hostConnectionProvider);
+      ref.invalidate(clientConnectionProvider);
       notifyListeners();
-      // hostConnection.dispose();
     } else {
-      // ClientConnectionProvider() leave lobby
-      // clientConnection.dispose();
+      clientConnection.disconnect();
+      ref.invalidate(dummyGameProvider);
+      ref.invalidate(hostConnectionProvider);
+      ref.invalidate(clientConnectionProvider);
     }
     _isInLobby = false;
   }
@@ -90,7 +95,7 @@ class ConnectionProvider extends ChangeNotifier {
   }
 
   void updateCards(List<String> cards) {
-    _cards = cards;
+    _cards = List<String>.from(cards);
     notifyListeners();
   }
 
