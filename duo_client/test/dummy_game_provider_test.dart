@@ -25,4 +25,67 @@ void main() {
     final anyCard = provider.cardData[anyCardId];
     expect(anyCard, isNotNull);
   });
+
+  group('DummyGameProvider.canPlaceCard', () {
+    late DummyGameProvider provider;
+
+    setUp(() {
+      provider = DummyGameProvider();
+
+      // Add two sample cards to the provider's card data
+      provider.cardData['red_5'] = UnoCard(
+        cardId: 'red_5',
+        cardColor: 'red',
+        cardValue: '5',
+        cardType: 'number',
+        specialEffect: '',
+        cardCount: 1,
+      );
+      provider.cardData['red_7'] = UnoCard(
+        cardId: 'red_7',
+        cardColor: 'red',
+        cardValue: '7',
+        cardType: 'number',
+        specialEffect: '',
+        cardCount: 1,
+      );
+      provider.cardData['blue_5'] = UnoCard(
+        cardId: 'blue_5',
+        cardColor: 'blue',
+        cardValue: '5',
+        cardType: 'number',
+        specialEffect: '',
+        cardCount: 1,
+      );
+      provider.cardData['wild_draw_4'] = UnoCard(
+        cardId: 'wild_draw_4',
+        cardColor: 'wild',
+        cardValue: 'draw_4',
+        cardType: 'special',
+        specialEffect: 'draw_4',
+        cardCount: 1,
+      );
+    });
+
+    test('returns true if color matches', () {
+      expect(provider.canPlaceCard('red_5', 'red_7'), isTrue);
+    });
+
+    test('returns true if value matches', () {
+      expect(provider.canPlaceCard('red_5', 'blue_5'), isTrue);
+    });
+
+    test('returns true if card to place is wild', () {
+      expect(provider.canPlaceCard('wild_draw_4', 'red_7'), isTrue);
+    });
+
+    test('returns false if neither color nor value nor wild', () {
+      expect(provider.canPlaceCard('red_7', 'blue_5'), isFalse);
+    });
+
+    test('returns false if card ids are invalid', () {
+      expect(provider.canPlaceCard('invalid', 'red_7'), isFalse);
+      expect(provider.canPlaceCard('red_7', 'invalid'), isFalse);
+    });
+  });
 }

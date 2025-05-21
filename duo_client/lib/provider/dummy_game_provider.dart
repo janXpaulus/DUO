@@ -126,6 +126,22 @@ class DummyGameProvider extends ChangeNotifier {
         _currentTurnPlayer, _playerCards[_currentTurnPlayer]!);
   }
 
+  /// Checks if [cardToPlaceId] can be placed on top of [topCardId].
+  bool canPlaceCard(String cardToPlaceId, String topCardId) {
+    final cardToPlace = _cardData[cardToPlaceId];
+    final topCard = _cardData[topCardId];
+
+    if (cardToPlace == null || topCard == null) return false;
+
+    // Allow if color or value matches, or if card is a wild card
+    return cardToPlace.cardColor == topCard.cardColor ||
+        cardToPlace.cardValue == topCard.cardValue ||
+        topCard.cardColor == 'wild' ||
+        cardToPlace.cardColor == 'wild';
+  }
+
+  //bool canPlace = canPlaceCard(playerCardId, stackTopCardId);
+
   Future<void> stopGame() async {
     _stackList = [];
     _playerCards.clear();
