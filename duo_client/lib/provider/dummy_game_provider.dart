@@ -142,6 +142,12 @@ class DummyGameProvider extends ChangeNotifier {
 
   //bool canPlace = canPlaceCard(playerCardId, stackTopCardId);
 
+  bool isSpecialCard(String cardId) {
+    final card = _cardData[cardId];
+    if (card == null) return false;
+    return card.cardType == 'special';
+  }
+
   Future<void> stopGame() async {
     _stackList = [];
     _playerCards.clear();

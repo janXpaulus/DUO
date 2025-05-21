@@ -88,4 +88,42 @@ void main() {
       expect(provider.canPlaceCard('red_7', 'invalid'), isFalse);
     });
   });
+
+  group('DummyGameProvider.isSpecialCard', () {
+    late DummyGameProvider provider;
+
+    setUp(() {
+      provider = DummyGameProvider();
+
+      // Add example cards
+      provider.cardData['red_5'] = UnoCard(
+        cardId: 'red_5',
+        cardColor: 'red',
+        cardValue: '5',
+        cardType: 'number',
+        specialEffect: '',
+        cardCount: 1,
+      );
+      provider.cardData['red_suspend'] = UnoCard(
+        cardId: 'red_suspend',
+        cardColor: 'red',
+        cardValue: 'suspend',
+        cardType: 'special',
+        specialEffect: 'suspend',
+        cardCount: 1,
+      );
+    });
+
+    test('returns false for a number card', () {
+      expect(provider.isSpecialCard('red_5'), isFalse);
+    });
+
+    test('returns true for a special card', () {
+      expect(provider.isSpecialCard('red_suspend'), isTrue);
+    });
+
+    test('returns false for an unknown card', () {
+      expect(provider.isSpecialCard('unknown_card'), isFalse);
+    });
+  });
 }
