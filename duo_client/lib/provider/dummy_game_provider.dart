@@ -1,64 +1,49 @@
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:duo_client/provider/host_connection_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// Card model
+class UnoCard {
+  final String cardId;
+  final String cardColor;
+  final String cardValue;
+  final String cardType;
+  final String specialEffect;
+  final int cardCount;
+
+  UnoCard({
+    required this.cardId,
+    required this.cardColor,
+    required this.cardValue,
+    required this.cardType,
+    required this.specialEffect,
+    required this.cardCount,
+  });
+
+  factory UnoCard.fromJson(Map<String, dynamic> json) {
+    return UnoCard(
+      cardId: json['CardId'],
+      cardColor: json['CardColor'],
+      cardValue: json['CardValue'],
+      cardType: json['CardType'],
+      specialEffect: json['SpecialEffect'],
+      cardCount: json['CardCount'],
+    );
+  }
+}
 
 class DummyGameProvider extends ChangeNotifier {
   final dummyGameProvider = ChangeNotifierProvider<DummyGameProvider>((ref) {
     return DummyGameProvider();
   });
 
-  final _cardsList = [
-    "draw_4",
-    "green_1",
-    "green_2",
-    "green_3",
-    "green_4",
-    "green_5",
-    "green_6",
-    "green_7",
-    "green_8",
-    "green_9",
-    "green_change_directions",
-    "green_draw_2",
-    "green_suspend",
-    "purple_1",
-    "purple_2",
-    "purple_3",
-    "purple_4",
-    "purple_5",
-    "purple_6",
-    "purple_7",
-    "purple_8",
-    "purple_9",
-    "purple_change_directions",
-    "purple_draw_2",
-    "purple_suspend",
-    "red_1",
-    "red_2",
-    "red_3",
-    "red_4",
-    "red_5",
-    "red_6",
-    "red_7",
-    "red_8",
-    "red_9",
-    "red_change_directions",
-    "red_draw_2",
-    "red_suspend",
-    "select_color",
-    "yellow_1",
-    "yellow_2",
-    "yellow_3",
-    "yellow_4",
-    "yellow_5",
-    "yellow_6",
-    "yellow_7",
-    "yellow_8",
-    "yellow_9",
-    "yellow_change_directions",
-    "yellow_draw_2",
-    "yellow_suspend",
-  ];
+  // List of all cards as CardId strings (with duplicates)
+  List<String> _cardsList = [];
+
+  // Map of CardId to UnoCard for attribute lookup
+  Map<String, UnoCard> _cardData = {};
 
   List<String> _shuffledCardsList = [];
 
@@ -74,8 +59,29 @@ class DummyGameProvider extends ChangeNotifier {
 
   List<String> get shuffledCardsList => _shuffledCardsList;
 
+  Map<String, UnoCard> get cardData => _cardData;
+
+  Future<void> loadCardsFromJson() async {
+    //Log the path of the JSON file
+    final String jsonString =
+        await rootBundle.loadString('assets/uno_cards.json');
+    final Map<String, dynamic> jsonData = json.decode(jsonString);
+    final List<dynamic> cardsJson = jsonData['cards'];
+    _cardsList = [];
+    _cardData = {};
+    for (var cardJson in cardsJson) {
+      final card = UnoCard.fromJson(cardJson);
+      _cardData[card.cardId] = card;
+      for (int i = 0; i < card.cardCount; i++) {
+        _cardsList.add(card.cardId);
+      }
+    }
+  }
+
   Future<void> startGame(WidgetRef ref) async {
-    //  Generate hands of cards
+    if (_cardsList.isEmpty) {
+      await loadCardsFromJson();
+    }
     _cardsList.shuffle();
     _shuffledCardsList = List<String>.from(_cardsList);
     final hostConnection = ref.read(hostConnectionProvider);
