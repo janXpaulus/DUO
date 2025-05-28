@@ -61,6 +61,10 @@ class DummyGameProvider extends ChangeNotifier {
 
   Map<String, UnoCard> get cardData => _cardData;
 
+  int _currentPlayerIndex = 0;
+
+  List<String> _playerOrder = [];
+
   Future<void> loadCardsFromJson() async {
     //Log the path of the JSON file
     final String jsonString =
@@ -103,18 +107,38 @@ class DummyGameProvider extends ChangeNotifier {
           slot.playerId, playerCards[slot.playerId] ?? []);
     }
 
-    _currentTurnPlayer = _playerCards.keys.first;
-    await hostConnection.notifyPlayerOfTurn(_currentTurnPlayer);
+    final firstCard = _shuffledCardsList.removeAt(0);
+    _stackList.add(firstCard);
+
+    _playerOrder = connectedClients.map((slot) => slot.playerId).toList();
+    debugPrint("Player Order: $_playerOrder");
+    _currentPlayerIndex = 0;
+    _currentTurnPlayer = _playerOrder[_currentPlayerIndex];
     debugPrint("Current player: $_currentTurnPlayer");
+    await hostConnection.notifyPlayerOfTurn(_currentTurnPlayer);
+
+    // _currentTurnPlayer = _playerCards.keys.first;
+    // await hostConnection.notifyPlayerOfTurn(_currentTurnPlayer);
+    // debugPrint("Current player: $_currentTurnPlayer");
     hostConnection.isGameReady = true;
+  }
+
+  void nextPlayerTurn(WidgetRef ref) {
+    if (_playerOrder.isEmpty) return;
+    _currentPlayerIndex = (_currentPlayerIndex + 1) % _playerOrder.length;
+    _currentTurnPlayer = _playerOrder[_currentPlayerIndex];
+    ref.read(hostConnectionProvider).notifyPlayerOfTurn(_currentTurnPlayer);
+    notifyListeners();
   }
 
   Future<void> placePlayerCardOnStack(
       String cardName, String playerId, Ref ref) async {
+    if (playerId != _currentTurnPlayer) return; // Only current player can play
     _stackList = List.from(_stackList)..add(cardName);
     notifyListeners();
     _playerCards[playerId]?.remove(cardName);
     notifyListeners();
+    nextPlayerTurn(ref as WidgetRef); // Advance turn
     // await ref
     //     .read(hostConnectionProvider)
     //     .updateCardsInClient(playerId, playerCards[playerId] ?? []);
