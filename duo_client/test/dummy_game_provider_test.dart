@@ -126,4 +126,65 @@ void main() {
       expect(provider.isSpecialCard('unknown_card'), isFalse);
     });
   });
+
+  group('DummyGameProvider.handleSpecialCard', () {
+    late DummyGameProvider provider;
+
+    setUp(() {
+      provider = DummyGameProvider();
+
+      // Add special and normal cards
+      provider.cardData['red_suspend'] = UnoCard(
+        cardId: 'red_suspend',
+        cardColor: 'red',
+        cardValue: 'suspend',
+        cardType: 'special',
+        specialEffect: 'suspend',
+        cardCount: 1,
+      );
+      provider.cardData['blue_reverse'] = UnoCard(
+        cardId: 'blue_reverse',
+        cardColor: 'blue',
+        cardValue: 'reverse',
+        cardType: 'special',
+        specialEffect: 'change_directions',
+        cardCount: 1,
+      );
+      provider.cardData['red_5'] = UnoCard(
+        cardId: 'red_5',
+        cardColor: 'red',
+        cardValue: '5',
+        cardType: 'number',
+        specialEffect: '',
+        cardCount: 1,
+      );
+    });
+
+    test('sets _turnOffset to 2 for suspend card', () {
+      provider.handleSpecialCard('red_suspend');
+      expect(provider.turnOffset, 2);
+    });
+
+    test('multiplies _direction by -1 for reverse card', () {
+      final initialDirection = provider.direction;
+      provider.handleSpecialCard('blue_reverse');
+      expect(provider.direction, initialDirection * -1);
+    });
+
+    test('does not change _turnOffset or _direction for normal card', () {
+      final initialOffset = provider.turnOffset;
+      final initialDirection = provider.direction;
+      provider.handleSpecialCard('red_5');
+      expect(provider.turnOffset, initialOffset);
+      expect(provider.direction, initialDirection);
+    });
+
+    test('does nothing for unknown card', () {
+      final initialOffset = provider.turnOffset;
+      final initialDirection = provider.direction;
+      provider.handleSpecialCard('unknown_card');
+      expect(provider.turnOffset, initialOffset);
+      expect(provider.direction, initialDirection);
+    });
+  });
 }

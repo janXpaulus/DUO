@@ -62,6 +62,10 @@ class DummyGameProvider extends ChangeNotifier {
   Map<String, UnoCard> get cardData => _cardData;
 
   int _currentPlayerIndex = 0;
+  int _turnOffset = 1; // How many players to skip (1 = normal, 2 = skip)
+  int _direction = 1; // 1 = clockwise, -1 = counterclockwise
+  int get turnOffset => _turnOffset;
+  int get direction => _direction;
 
   List<String> _playerOrder = [];
 
@@ -125,9 +129,15 @@ class DummyGameProvider extends ChangeNotifier {
 
   void nextPlayerTurn(WidgetRef ref) {
     if (_playerOrder.isEmpty) return;
-    _currentPlayerIndex = (_currentPlayerIndex + 1) % _playerOrder.length;
+    _currentPlayerIndex = (_currentPlayerIndex + (_turnOffset * _direction)) %
+        _playerOrder.length;
+    if (_currentPlayerIndex < 0) {
+      _currentPlayerIndex += _playerOrder.length;
+    }
     _currentTurnPlayer = _playerOrder[_currentPlayerIndex];
+    debugPrint("Next player: $_currentTurnPlayer");
     ref.read(hostConnectionProvider).notifyPlayerOfTurn(_currentTurnPlayer);
+    _turnOffset = 1;
     notifyListeners();
   }
 
@@ -138,6 +148,10 @@ class DummyGameProvider extends ChangeNotifier {
     notifyListeners();
     _playerCards[playerId]?.remove(cardName);
     notifyListeners();
+    // Handle special card logic
+    if (isSpecialCard(cardName)) {
+      handleSpecialCard(cardName);
+    }
     nextPlayerTurn(ref as WidgetRef); // Advance turn
     // await ref
     //     .read(hostConnectionProvider)
@@ -170,6 +184,19 @@ class DummyGameProvider extends ChangeNotifier {
     final card = _cardData[cardId];
     if (card == null) return false;
     return card.cardType == 'special';
+  }
+
+  void handleSpecialCard(String cardId) {
+    final card = _cardData[cardId];
+    if (card == null) return;
+
+    if (card.specialEffect == 'suspend') {
+      // Skip next player
+      _turnOffset = 2;
+    } else if (card.specialEffect == 'change_directions') {
+      // Reverse direction
+      _direction *= -1;
+    }
   }
 
   Future<void> stopGame() async {
