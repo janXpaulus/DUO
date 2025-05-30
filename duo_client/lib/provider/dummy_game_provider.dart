@@ -159,6 +159,10 @@ class DummyGameProvider extends ChangeNotifier {
   }
 
   Future<void> sendCardToCurrentPlayer(WidgetRef ref, String cardName) async {
+    if (_shuffledCardsList.isEmpty) {
+      reshuffleStackIntoDeck();
+    }
+
     _playerCards[_currentTurnPlayer]?.add(cardName);
     await ref.read(hostConnectionProvider).updateCardsInClient(
         _currentTurnPlayer, _playerCards[_currentTurnPlayer]!);
@@ -197,6 +201,17 @@ class DummyGameProvider extends ChangeNotifier {
       // Reverse direction
       _direction *= -1;
     }
+  }
+
+  void reshuffleStackIntoDeck() {
+    if (_stackList.length <= 1) return; // Nothing to reshuffle
+    // Remove all but the top card from the stack
+    final cardsToReshuffle = _stackList.sublist(0, _stackList.length - 1);
+    _stackList = [_stackList.last];
+    // Add to deck and shuffle
+    _shuffledCardsList.addAll(cardsToReshuffle);
+    _shuffledCardsList.shuffle();
+    notifyListeners();
   }
 
   Future<void> stopGame() async {

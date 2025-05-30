@@ -187,4 +187,53 @@ void main() {
       expect(provider.direction, initialDirection);
     });
   });
+
+  test('reshuffleStackIntoDeck moves all but top card to deck and shuffles',
+      () {
+    final provider = DummyGameProvider();
+
+    // Simulate a stack with 4 cards and an empty deck
+    provider.cardData['A'] = UnoCard(
+        cardId: 'A',
+        cardColor: 'red',
+        cardValue: '1',
+        cardType: 'number',
+        specialEffect: '',
+        cardCount: 1);
+    provider.cardData['B'] = UnoCard(
+        cardId: 'B',
+        cardColor: 'blue',
+        cardValue: '2',
+        cardType: 'number',
+        specialEffect: '',
+        cardCount: 1);
+    provider.cardData['C'] = UnoCard(
+        cardId: 'C',
+        cardColor: 'green',
+        cardValue: '3',
+        cardType: 'number',
+        specialEffect: '',
+        cardCount: 1);
+    provider.cardData['D'] = UnoCard(
+        cardId: 'D',
+        cardColor: 'yellow',
+        cardValue: '4',
+        cardType: 'number',
+        specialEffect: '',
+        cardCount: 1);
+
+    provider.stackList.clear();
+    provider.shuffledCardsList.clear();
+
+    provider.stackList.addAll(['A', 'B', 'C', 'D']); // D is the top card
+
+    provider.reshuffleStackIntoDeck();
+
+    // Only the top card should remain on the stack
+    expect(provider.stackList, ['D']);
+
+    // The deck should now contain the other cards
+    expect(provider.shuffledCardsList.length, 3);
+    expect(provider.shuffledCardsList.toSet(), {'A', 'B', 'C'});
+  });
 }
