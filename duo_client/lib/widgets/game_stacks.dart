@@ -30,8 +30,7 @@ class _GameStacksState extends ConsumerState<GameStacks> {
       child: Row(
         children: [
           // Draw stack
-          SizedBox(
-            height: 300,
+          Expanded(
             child: DUOCardStack(
               cards: [
                 PlayingCard(
@@ -45,19 +44,13 @@ class _GameStacksState extends ConsumerState<GameStacks> {
               randomAngles: false,
               onTap: (PlayingCard card) async {
                 debugPrint('requesting Card for player');
-                ref
-                    .read(dummyGameProvider)
-                    .sendCardToCurrentPlayer(ref, card.cardName);
-                // String token = await ref.read(apiProvider).getToken();
-                // ref
-                //     .watch(apiProvider)
-                //     .requestCard(token, ref.read(apiProvider).gameId);
+                final dummyGame = ref.read(dummyGameProvider);
+                await dummyGame.moveCardToCurrentPlayer(ref, card.cardName);
               },
             ),
           ),
           // Place stack
-          SizedBox(
-            height: 300,
+          Expanded(
             child: DUOCardStack(
               cards: [
                 PlayingCard(

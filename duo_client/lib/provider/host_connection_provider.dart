@@ -329,7 +329,8 @@ class HostConnectionProvider extends ChangeNotifier {
   }
 
   Future<void> updateCardsInClient(String playerId, List<String> cards) async {
-    sendMessage(
+    debugPrint("Called updateCardsInClient");
+    await sendMessage(
         playerId,
         DuoMessage(
             type: "cards",
@@ -339,12 +340,16 @@ class HostConnectionProvider extends ChangeNotifier {
 
   Future<void> placeCardOnStack(
       String cardName, String playerId, Ref ref) async {
-    final dummyGame = ref.read(dummyGameProvider);
-    dummyGame.stackList.add(cardName);
-    notifyListeners();
-    dummyGame.playerCards[playerId]?.remove(cardName);
-    notifyListeners();
-    updateCardsInClient(playerId, dummyGame.playerCards[playerId] ?? []);
+    try {
+      final dummyGame = ref.read(dummyGameProvider);
+      debugPrint("Placing player card on stack from host_connection_provider");
+      await dummyGame.placePlayerCardOnStack(cardName, playerId, ref);
+      updateCardsInClient(playerId, dummyGame.playerCards[playerId] ?? []);
+      // await updateCardsInClient(
+      //     playerId, dummyGame.playerCards[playerId] ?? []);
+    } on Exception catch (e) {
+      debugPrint("Exception $e when trying to do placing cards shit");
+    }
   }
 
   Future<void> notifyPlayerOfTurn(String playerId) async {

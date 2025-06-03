@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
+
 import 'package:duo_client/provider/host_connection_provider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart' show rootBundle, rootBundlee;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Card model
@@ -65,6 +66,7 @@ class DummyGameProvider extends ChangeNotifier {
   int _turnOffset = 1; // How many players to skip (1 = normal, 2 = skip)
   int _direction = 1; // 1 = clockwise, -1 = counterclockwise
   int get turnOffset => _turnOffset;
+
   int get direction => _direction;
 
   List<String> _playerOrder = [];
@@ -84,6 +86,7 @@ class DummyGameProvider extends ChangeNotifier {
         _cardsList.add(card.cardId);
       }
     }
+    debugPrint("${_cardsList.toString()}");
   }
 
   Future<void> startGame(WidgetRef ref) async {
@@ -127,7 +130,7 @@ class DummyGameProvider extends ChangeNotifier {
     hostConnection.isGameReady = true;
   }
 
-  void nextPlayerTurn(WidgetRef ref) {
+  void nextPlayerTurn(Ref ref) {
     if (_playerOrder.isEmpty) return;
     _currentPlayerIndex = (_currentPlayerIndex + (_turnOffset * _direction)) %
         _playerOrder.length;
@@ -136,7 +139,7 @@ class DummyGameProvider extends ChangeNotifier {
     }
     _currentTurnPlayer = _playerOrder[_currentPlayerIndex];
     debugPrint("Next player: $_currentTurnPlayer");
-    ref.read(hostConnectionProvider).notifyPlayerOfTurn(_currentTurnPlayer);
+    //ref.read(hostConnectionProvider).notifyPlayerOfTurn(_currentTurnPlayer);
     _turnOffset = 1;
     notifyListeners();
   }
@@ -146,24 +149,27 @@ class DummyGameProvider extends ChangeNotifier {
     if (playerId != _currentTurnPlayer) return; // Only current player can play
     _stackList = List.from(_stackList)..add(cardName);
     notifyListeners();
+    debugPrint("PlayerCards before removal: ${_playerCards[playerId]}");
     _playerCards[playerId]?.remove(cardName);
     notifyListeners();
+    debugPrint("PlayerCards after removal: ${_playerCards[playerId]}");
+    // ref.read(hostConnectionProvider).updateCardsInClient(
+    //     _currentTurnPlayer, _playerCards[_currentTurnPlayer]!);
     // Handle special card logic
     if (isSpecialCard(cardName)) {
       handleSpecialCard(cardName);
     }
-    nextPlayerTurn(ref as WidgetRef); // Advance turn
-    // await ref
-    //     .read(hostConnectionProvider)
-    //     .updateCardsInClient(playerId, playerCards[playerId] ?? []);
+    nextPlayerTurn(ref); // Advance turn
   }
 
-  Future<void> sendCardToCurrentPlayer(WidgetRef ref, String cardName) async {
+  Future<void> moveCardToCurrentPlayer(WidgetRef ref, String cardName) async {
     if (_shuffledCardsList.isEmpty) {
       reshuffleStackIntoDeck();
     }
 
     _playerCards[_currentTurnPlayer]?.add(cardName);
+    _shuffledCardsList.remove(cardName);
+    notifyListeners();
     await ref.read(hostConnectionProvider).updateCardsInClient(
         _currentTurnPlayer, _playerCards[_currentTurnPlayer]!);
   }

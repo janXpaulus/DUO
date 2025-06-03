@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart';
 import 'package:duo_client/provider/connection_provider.dart';
@@ -41,7 +42,7 @@ class ClientConnectionProvider extends ChangeNotifier {
   bool _isGameReady = false;
   late Peripheral _peripheral;
 
-  String _playerName = "Iruska";
+  String _playerName = "Player";
   late List<GATTService> _discoveredGatt;
   late GATTCharacteristic _notifyCharacteristic;
   late GATTCharacteristic _writeCharacteristic;
@@ -107,6 +108,21 @@ class ClientConnectionProvider extends ChangeNotifier {
 
   Future<void> handleConnection(HostConnection hostConnection) async {
     _connectionInformation = hostConnection;
+    final List<String> _humanNames = [
+      "Alex",
+      "Jamie",
+      "Taylor",
+      "Jordan",
+      "Morgan",
+      "Casey",
+      "Riley",
+      "Avery",
+      "Drew",
+      "Quinn"
+    ];
+
+    final random = Random();
+    _playerName = _humanNames[random.nextInt(_humanNames.length)];
 
     try {
       await initializeBle();
