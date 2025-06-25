@@ -144,6 +144,12 @@ class DummyGameProvider extends ChangeNotifier {
   Future<void> placePlayerCardOnStack(
       String cardName, String playerId, Ref ref) async {
     if (playerId != _currentTurnPlayer) return; // Only current player can play
+
+    // Check if the card can be placed
+    String stackTopCardId = _stackList.isNotEmpty ? _stackList.last : '';
+    bool canPlace = canPlaceCard(cardName, stackTopCardId);
+    if (!canPlace) return; // Card cannot be placed, exit early
+
     _stackList = List.from(_stackList)..add(cardName);
     notifyListeners();
     _playerCards[playerId]?.remove(cardName);
